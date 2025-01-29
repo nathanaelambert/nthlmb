@@ -13,6 +13,11 @@
         <button id="level3">Level 3</button>
     </div>
     <div id="game-container"></div>
+    <div class="slider-container">
+        <input type="range" id="degreeSlider" min="0" max="360" value="0" step="1">
+        <span id="sliderValue">0°</span>
+    </div>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script type="module" src="./game_run.js"></script>
     <script type="module" src="./button_logic.js"></script>

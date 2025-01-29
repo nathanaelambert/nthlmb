@@ -1,8 +1,21 @@
-let scene, camera, renderer, terrain;
+let scene, renderer, terrain;
 
+
+let camera;
 let cubes = [];
 let styles = {}; // To store loaded styles
-let view_angle = 0; // Renamed from angle to view_angle
+
+let _view_angle = 0;
+
+export const viewAngle = {
+  get: () => _view_angle,
+  set: (value) => {
+    
+
+    _view_angle = value * (Math.PI / 180);
+    updateCameraPosition();
+  }
+};
 
 const UNIT_SIZE = 64; // size in Pixels
 const FACE_SIZE = 3;
@@ -126,9 +139,6 @@ function orientCube(cube, orientation) {
     cube.updateMatrixWorld();
 }
 
-
-
-
 export function loadLevel(levelNumber) { 
     cubes = [];
 
@@ -166,16 +176,15 @@ export function loadLevel(levelNumber) {
                     Math.floor(i / 3) - 1
                 );
                 orientCube(cube, tileData.orientation);
-
+                
+                cube.name = i;
                 cubes.push(cube);
             }
         }
 
         cubes.forEach(cube => {   scene.add(cube);   });
-        console.log(cubes);
 
 
-        scene.children.forEach(child => console.log(child));
     })
     .catch(error => console.error('Error loading level:', error));
 
@@ -186,11 +195,12 @@ export function loadLevel(levelNumber) {
 
 function init() {
     scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     renderer = new THREE.WebGLRenderer({ antialias: true });
 
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.getElementById('game-container').appendChild(renderer.domElement);
+
+    scene.background = new THREE.Color(0xADD8E6);
 
     // Load terrain, styles, cubes, and level data
     Promise.all([
@@ -204,19 +214,18 @@ function init() {
 
         // Load terrain
         terrain = load_terrain(terrainData.terrain);
+        window.terrain = terrain;
         scene.add(terrain);
         // Add a GridHelper
         const gridHelper = new THREE.GridHelper(GRID_SIZE, GRID_SIZE, styles.colors.grid, styles.colors.grid); // Black lines
         gridHelper.position.y = 0.01; // Slightly above the plane to avoid z-fighting
         scene.add(gridHelper);
-
-        // Set camera position and angle (3/4 view)
-        camera.position.set(3.5, 6.5, 7.5); // Above and at an angle
-        camera.lookAt(0, 0, 0); // Look at the center of the scene
     })
     .catch(error => console.error('Error loading data:', error));
 
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     updateCameraPosition();
+
 }
 
 function updateCameraPosition() {
@@ -224,32 +233,32 @@ function updateCameraPosition() {
     const heightAngle = Math.PI / 6; // Angle from the horizontal plane (30 degrees)
 
     // Calculate new camera position
-    const x = radius * Math.cos(view_angle) * Math.cos(heightAngle);
-    const z = radius * Math.sin(view_angle) * Math.cos(heightAngle);
+    const x = radius * Math.cos(_view_angle) * Math.cos(heightAngle);
+    const z = radius * Math.sin(_view_angle) * Math.cos(heightAngle);
     const y = radius * Math.sin(heightAngle);
 
     camera.position.set(x, y, z);
     camera.lookAt(0, 0, 0); // Always look at the center
 }
 
-function animate() {
-    requestAnimationFrame(animate);
 
-    // Update camera position
-    //view_angle += 0.005; // Adjust this value to change rotation speed
-    if (view_angle > Math.PI * 2) view_angle -= Math.PI * 2; // Reset angle after full rotation
-    updateCameraPosition();
-
-    renderer.render(scene, camera);
-}
-
+window.addEventListener('resize', onWindowResize);
 function onWindowResize() {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
-window.addEventListener('resize', onWindowResize);
+
+function animate() {
+    requestAnimationFrame(animate);
+    renderer.render(scene, camera);
+}
+
+
+
+
+
 
 init();
 animate();

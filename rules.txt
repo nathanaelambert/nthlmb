@@ -1,0 +1,59 @@
+I want to implement game logic for a cube game.
+Game logic should be in JS in the file game_logic.js
+1. The game :
+The game is a 3D labyrinth in motion.
+The game is played on a 3x3 grid of 9 cells.
+Each cell can contain, a cube, the player or the player on top of a cube.
+Cubes can be fixed. If they are not fixed, they can be moved between adjacent cells as long as the destination cell is empty and that the player is not standing on the cube.
+Certain faces of some cubes are "goal faces".
+Faces on the cubes and on the grid are made of paths of different shapes connecting some of their edges. Edges, are either acceccible or not for each face. 
+The Player can travel between cells by following paths on the grid floor, and on the cubes.
+The player can only travel on visible faces.
+The gqñe ends when the player reaches the goal face.
+
+2. The Game state is as follows :
+- Graph of faces :
+each of the 5*nb_cubes_in_level + 9 faces is a node
+each pair of connected faces creates an edge
+
+The game also stores the cubes and their orientation to generate graphs.
+
+- position of the player (node id)
+
+3. Define The following methods :
+
+possible_mouvements(cube)
+
+move(cube):
+update graph
+
+is_won()
+
+is_valid(Player_motion_in_graph)
+
+
+write a fonction generateGraph(cubes, levels, terrain, level_id)
+
+Generate the graph as following :
+represent each face as a 2D vector.
+the coordinates should map as follows :
+tile0 = (-1, -1)
+tile1 = (0, -1)
+tile2 = (1, -1)
+...
+tile8=(1,1)
+
+This is the terrain:
+{
+    "terrain": {
+      "tile0": [[0,0,0], [0,1,1], [0,0,0]],
+      "tile1": [[0,0,0], [1,1,1], [0,0,0]],
+      "tile2": [[0,0,0], [1,1,0], [0,0,0]],
+      "tile3": [[0,0,0], [0,0,0], [0,0,0]],
+      "tile4": [[0,0,0], [0,1,1], [0,1,0]],
+      "tile5": [[0,0,0], [1,1,0], [0,0,0]],
+      "tile6": [[0,0,0], [0,1,1], [0,0,0]],
+      "tile7": [[0,1,0], [1,1,0], [0,0,0]],
+      "tile8": [[0,0,0], [0,0,0], [0,0,0]]
+    }
+}
