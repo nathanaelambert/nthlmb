@@ -73,7 +73,7 @@ function load_terrain(terrainData) {
     texture.magFilter = THREE.NearestFilter;
 
     // Create a plane with the terrain texture
-    const geometry = new THREE.PlaneGeometry(9, 9);
+    const geometry = new THREE.PlaneGeometry(GRID_SIZE, GRID_SIZE);
     const material = new THREE.MeshBasicMaterial({ map: texture });
     const plane = new THREE.Mesh(geometry, material);
     plane.rotation.x = -Math.PI / 2; // Rotate to lay flat
