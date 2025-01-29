@@ -1,0 +1,38 @@
+{
+    "level_001": {
+      "tile0": {"cube": "green_cube", "orientation": ["back", "bottom"], "fixed": true},
+      "tile1": null,
+      "tile2": {"cube": "blue_cube", "orientation": ["front", "top"], "fixed": false},
+      "tile3": null,
+      "tile4": {"cube": "yellow_cube", "orientation": ["front", "left"], "fixed": true},
+      "tile5": null,
+      "tile6": null,
+      "tile7": null,
+      "tile8": null,
+      "player_start": 0
+    },
+    "level_002": {
+      "tile0": {"cube": "orange_cube", "orientation": ["left", "top"], "fixed": false},
+      "tile1": null,
+      "tile2": {"cube": "green_cube", "orientation": ["right", "front"], "fixed": true},
+      "tile3": {"cube": "blue_cube", "orientation": ["bottom", "back"], "fixed": false},
+      "tile4": null,
+      "tile5": {"cube": "yellow_cube", "orientation": ["top", "right"], "fixed": true},
+      "tile6": null,
+      "tile7": {"cube": "orange_cube", "orientation": ["front", "left"], "fixed": false},
+      "tile8": null,
+      "player_start": 3
+    },
+    "level_003": {
+      "tile0": null,
+      "tile1": {"cube": "yellow_cube", "orientation": ["back", "right"], "fixed": true},
+      "tile2": {"cube": "blue_cube", "orientation": ["top", "left"], "fixed": false},
+      "tile3": {"cube": "green_cube", "orientation": ["front", "bottom"],"fixed" :true},
+      "tile4": null,
+      "tile5": {"cube": "yellow_cube", "orientation": ["top", "right"], "fixed": true},
+      "tile6": null,
+      "tile7": {"cube": "orange_cube", "orientation": ["front", "left"], "fixed": false},
+      "tile8": null,
+      "player_start": 6
+    }
+}
