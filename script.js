@@ -53,7 +53,7 @@ function load_terrain(terrainData) {
     const drawFace = (faceData, x, y) => {
         faceData.forEach((row, i) => {
             row.forEach((cell, j) => {
-                ctx.fillStyle = cell ? 'white' : 'black';
+                ctx.fillStyle = cell ? styles.colors.white : styles.colors.black;
                 ctx.fillRect((x + j) * UNIT_SIZE, (y + i) * UNIT_SIZE, UNIT_SIZE, UNIT_SIZE);
             });
         });
@@ -73,7 +73,7 @@ function load_terrain(terrainData) {
     texture.magFilter = THREE.NearestFilter;
 
     // Create a plane with the terrain texture
-    const geometry = new THREE.PlaneGeometry(GRID_SIZE, GRID_SIZE);
+    const geometry = new THREE.PlaneGeometry(GRID_SIZE, GRID_SIZE,GRID_SIZE, GRID_SIZE);
     const material = new THREE.MeshBasicMaterial({ map: texture });
     const plane = new THREE.Mesh(geometry, material);
     plane.rotation.x = -Math.PI / 2; // Rotate to lay flat
@@ -132,6 +132,10 @@ function init() {
         // Load terrain
         terrain = load_terrain(terrainData.terrain);
         scene.add(terrain);
+        // Add a GridHelper
+        const gridHelper = new THREE.GridHelper(GRID_SIZE, GRID_SIZE, 0x000000, 0x000000); // Black lines
+        gridHelper.position.y = 0.01; // Slightly above the plane to avoid z-fighting
+        scene.add(gridHelper);
 
         // Load level data
         const level = levelsData.level_001;
