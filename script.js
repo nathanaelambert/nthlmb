@@ -8,16 +8,21 @@ const UNIT_SIZE = 64; // size in Pixels
 const FACE_SIZE = 3;
 const GRID_SIZE = 3;
 
-function load_cube(cubeData) {
+function load_cube(cubeData, cubeName) {
 
-    const createFaceTexture = (faceData) => {
+    const cubeColor = cubeName.split('_')[0];
+    const createFaceTexture = (faceData, face) => {
         const canvas = document.createElement('canvas');
         canvas.width = canvas.height = FACE_SIZE * UNIT_SIZE;
         const ctx = canvas.getContext('2d');
 
         faceData.forEach((row, i) => {
             row.forEach((cell, j) => {
-                ctx.fillStyle = cell ? styles.colors.white : styles.colors.black;
+                if (cubeData.goal === face && i === 1 && j === 1){
+                    ctx.fillStyle = styles.colors.win;
+                } else {
+                    ctx.fillStyle = cell ? styles.colors.white : styles.colors[cubeColor];
+                }
                 ctx.fillRect(j * UNIT_SIZE, i * UNIT_SIZE, UNIT_SIZE, UNIT_SIZE);
             });
         });
@@ -29,13 +34,16 @@ function load_cube(cubeData) {
     };
 
     const materials = [
-        new THREE.MeshBasicMaterial({ map: createFaceTexture(cubeData.right) }),
-        new THREE.MeshBasicMaterial({ map: createFaceTexture(cubeData.left) }),
-        new THREE.MeshBasicMaterial({ map: createFaceTexture(cubeData.top) }),
-        new THREE.MeshBasicMaterial({ map: createFaceTexture(cubeData.bottom) }),
-        new THREE.MeshBasicMaterial({ map: createFaceTexture(cubeData.front) }),
-        new THREE.MeshBasicMaterial({ map: createFaceTexture(cubeData.back) })
+        new THREE.MeshBasicMaterial({ map: createFaceTexture(cubeData.right, "right") }),
+        new THREE.MeshBasicMaterial({ map: createFaceTexture(cubeData.left, "left") }),
+        new THREE.MeshBasicMaterial({ map: createFaceTexture(cubeData.top, "top") }),
+        new THREE.MeshBasicMaterial({ map: createFaceTexture(cubeData.bottom, "bottom") }),
+        new THREE.MeshBasicMaterial({ map: createFaceTexture(cubeData.front, "front") }),
+        new THREE.MeshBasicMaterial({ map: createFaceTexture(cubeData.back, "back") })
     ];
+
+    materials.side = THREE.DoubleSide;
+    materials.wireframe = true;
 
     // Create and return a cube mesh
     const geometry = new THREE.BoxGeometry();
@@ -114,7 +122,7 @@ function orientCube(cube, orientation) {
 function init() {
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    renderer = new THREE.WebGLRenderer();
+    renderer = new THREE.WebGLRenderer({ antialias: true });
 
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.getElementById('game-container').appendChild(renderer.domElement);
@@ -133,7 +141,7 @@ function init() {
         terrain = load_terrain(terrainData.terrain);
         scene.add(terrain);
         // Add a GridHelper
-        const gridHelper = new THREE.GridHelper(GRID_SIZE, GRID_SIZE, 0x000000, 0x000000); // Black lines
+        const gridHelper = new THREE.GridHelper(GRID_SIZE, GRID_SIZE, styles.colors.grid, styles.colors.grid); // Black lines
         gridHelper.position.y = 0.01; // Slightly above the plane to avoid z-fighting
         scene.add(gridHelper);
 
@@ -144,16 +152,18 @@ function init() {
         for (let i = 0; i < 9; i++) {
             const tileData = level[`tile${i}`];
             if (tileData && tileData.cube) {
-                const cube = load_cube(cubesData[tileData.cube]);
+                const cube = load_cube(cubesData[tileData.cube], tileData.cube);
                 
-                console.log(i);
-                // Position cube
+                //Position cube
                 cube.position.set(
                     (i % 3) - 1,
-                    0.02,
+                    0.5,
                     Math.floor(i / 3) - 1
                 );
-    
+
+                console.log(`Cube ${i} position:`, cube.position);
+
+                 
                 // Orient cube
                 orientCube(cube, tileData.orientation);
     
@@ -161,6 +171,7 @@ function init() {
                 cubes.push(cube);
             }
         }
+        console.log(cubes)
 
         // Set camera position and angle (3/4 view)
         camera.position.set(3.5, 6.5, 7.5); // Above and at an angle
@@ -172,7 +183,7 @@ function init() {
 }
 
 function updateCameraPosition() {
-    const radius = 10; // Distance from the center
+    const radius = 5; // Distance from the center
     const heightAngle = Math.PI / 6; // Angle from the horizontal plane (30 degrees)
 
     // Calculate new camera position

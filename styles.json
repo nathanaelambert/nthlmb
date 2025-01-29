@@ -1,7 +1,19 @@
 {
     "colors": {
-      "black": "#222222",
-      "white": "#fefefe"   
+        "black": "#222222",
+        "white": "#ffffe2",
+
+        "win":   "#ffff00", 
+
+        "green": "#21660d",
+        "purple": "#800080",
+        "orange": "#a85614",
+        "blue": "#2b097a",
+        "cyan": "#0c877c",
+        "red": "#b5070d",
+
+        "grid": "#ffffff"
     }
-  }
+}
+ 
   
