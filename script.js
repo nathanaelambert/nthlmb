@@ -1,4 +1,4 @@
-let scene, camera, renderer, cube;
+let scene, camera, renderer;
 
 let styles = {}; // To store loaded styles
 
@@ -39,41 +39,53 @@ function init() {
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     renderer = new THREE.WebGLRenderer();
-
+    
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.getElementById('game-container').appendChild(renderer.domElement);
 
-    // Load styles and cube data
+    // Load styles and cubes data
     Promise.all([
         fetch('styles.json').then(response => response.json()),
-        fetch('green_cube.json').then(response => response.json())
+        fetch('cubes.json').then(response => response.json())
     ])
-    .then(([loadedStyles, cubeData]) => {
+    .then(([loadedStyles, cubesData]) => {
         styles = loadedStyles; // Store loaded styles
         console.log('Styles loaded:', styles);
 
-        const materials = load_cube(cubeData.green_cube);
+        // Create and position each cube
+        const cubeSpacing = 2.5; // Space between cubes
+        const cubeKeys = Object.keys(cubesData);
+        cubeKeys.forEach((cubeKey, index) => {
+            const materials = load_cube(cubesData[cubeKey]);
+            const geometry = new THREE.BoxGeometry();
+            const cube = new THREE.Mesh(geometry, materials);
+            
+            // Position cubes in a row
+            cube.position.x = (index - (cubeKeys.length - 1) / 2) * cubeSpacing;
+            
+            scene.add(cube);
+        });
 
-        // Create a cube with the loaded materials
-        const geometry = new THREE.BoxGeometry();
-        cube = new THREE.Mesh(geometry, materials);
-        scene.add(cube);
-
-        camera.position.set(0, 0, 5);
+        // Adjust camera position to view all cubes
+        camera.position.set(0, 0, 10);
         camera.lookAt(0, 0, 0);
     })
     .catch(error => console.error('Error loading data:', error));
 }
 
 
+
 function animate() {
     requestAnimationFrame(animate);
-    if (cube) {
-        cube.rotation.x += 0.01;
-        cube.rotation.y += 0.01;
-    }
+    scene.children.forEach(child => {
+        if (child instanceof THREE.Mesh) {
+            child.rotation.x += 0.01;
+            child.rotation.y += 0.01;
+        }
+    });
     renderer.render(scene, camera);
 }
+
 
 function onWindowResize() {
     camera.aspect = window.innerWidth / window.innerHeight;
