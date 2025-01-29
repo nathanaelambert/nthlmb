@@ -4,66 +4,66 @@ let cubes = [];
 let styles = {}; // To store loaded styles
 let view_angle = 0; // Renamed from angle to view_angle
 
-function load_cube(cubeData) {
-    const faceSize = 3;
-    const textureSize = faceSize * 4; // 4x4 layout for 6 faces
-    const canvas = document.createElement('canvas');
-    canvas.width = canvas.height = textureSize * 32; // 32 pixels per grid square
-    const ctx = canvas.getContext('2d');
+const UNIT_SIZE = 32; // size in Pixels
+const FACE_SIZE = 3;
+const GRID_SIZE = 3;
 
-    const drawFace = (faceData, x, y) => {
+function load_cube(cubeData) {
+
+    const createFaceTexture = (faceData) => {
+        const canvas = document.createElement('canvas');
+        canvas.width = canvas.height = FACE_SIZE * UNIT_SIZE;
+        const ctx = canvas.getContext('2d');
+
         faceData.forEach((row, i) => {
             row.forEach((cell, j) => {
                 ctx.fillStyle = cell ? styles.colors.white : styles.colors.black;
-                ctx.fillRect((x + j) * 32, (y + i) * 32, 32, 32);
+                ctx.fillRect(j * UNIT_SIZE, i * UNIT_SIZE, UNIT_SIZE, UNIT_SIZE);
             });
         });
+
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.minFilter = THREE.NearestFilter;
+        texture.magFilter = THREE.NearestFilter;
+        return texture;
     };
 
-    // Draw faces on the canvas
-    drawFace(cubeData.right, 0, faceSize);
-    drawFace(cubeData.left, faceSize * 2, faceSize);
-    drawFace(cubeData.top, faceSize, 0);
-    drawFace(cubeData.bottom, faceSize, faceSize * 2);
-    drawFace(cubeData.front, faceSize, faceSize);
-    drawFace(cubeData.back, faceSize * 3, faceSize);
-
-    // Create a texture from the canvas
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.minFilter = THREE.NearestFilter;
-    texture.magFilter = THREE.NearestFilter;
-
-    // Create a material with the texture
-    const material = new THREE.MeshBasicMaterial({ map: texture });
+    const materials = [
+        new THREE.MeshBasicMaterial({ map: createFaceTexture(cubeData.right) }),
+        new THREE.MeshBasicMaterial({ map: createFaceTexture(cubeData.left) }),
+        new THREE.MeshBasicMaterial({ map: createFaceTexture(cubeData.top) }),
+        new THREE.MeshBasicMaterial({ map: createFaceTexture(cubeData.bottom) }),
+        new THREE.MeshBasicMaterial({ map: createFaceTexture(cubeData.front) }),
+        new THREE.MeshBasicMaterial({ map: createFaceTexture(cubeData.back) })
+    ];
 
     // Create and return a cube mesh
     const geometry = new THREE.BoxGeometry();
-    const cube = new THREE.Mesh(geometry, material);
+    const cube = new THREE.Mesh(geometry, materials);
 
     return cube;
 }
 
 function load_terrain(terrainData) {
-    const tileSize = 32; // Size of each tile in pixels
-    const gridSize = 3; // 3x3 grid for terrain
+    const textureSize = FACE_SIZE * GRID_SIZE; // 3x3 layout for 9 tiles
     const canvas = document.createElement('canvas');
-    canvas.width = canvas.height = gridSize * tileSize; // Total texture size
+    canvas.width = canvas.height = textureSize * UNIT_SIZE;
     const ctx = canvas.getContext('2d');
 
-    const drawTile = (tileData, x, y) => {
-        tileData.forEach((row, i) => {
+    const drawFace = (faceData, x, y) => {
+        faceData.forEach((row, i) => {
             row.forEach((cell, j) => {
                 ctx.fillStyle = cell ? 'white' : 'black';
-                ctx.fillRect((x + j) * tileSize, (y + i) * tileSize, tileSize, tileSize);
+                ctx.fillRect((x + j) * UNIT_SIZE, (y + i) * UNIT_SIZE, UNIT_SIZE, UNIT_SIZE);
             });
         });
     };
 
-    // Draw all tiles on the canvas
-    for (let i = 0; i < gridSize; i++) {
-        for (let j = 0; j < gridSize; j++) {
-            const tileIndex = i * gridSize + j;
-            drawTile(terrainData[`tile${tileIndex}`], j * tileSize, i * tileSize);
+    // Draw faces on the canvas
+    for (let i = 0; i < GRID_SIZE; i++) {
+        for (let j = 0; j < GRID_SIZE; j++) {
+            const tileIndex = i * GRID_SIZE + j;
+            drawFace(terrainData[`tile${tileIndex}`], j * FACE_SIZE, i * FACE_SIZE);
         }
     }
 
@@ -73,7 +73,7 @@ function load_terrain(terrainData) {
     texture.magFilter = THREE.NearestFilter;
 
     // Create a plane with the terrain texture
-    const geometry = new THREE.PlaneGeometry(gridSize, gridSize); // Plane size matches the grid size
+    const geometry = new THREE.PlaneGeometry(9, 9);
     const material = new THREE.MeshBasicMaterial({ map: texture });
     const plane = new THREE.Mesh(geometry, material);
     plane.rotation.x = -Math.PI / 2; // Rotate to lay flat
