@@ -149,7 +149,7 @@ function init() {
                 // Position cube
                 cube.position.set(
                     (i % 3) - 1,
-                    0.5,
+                    0.02,
                     Math.floor(i / 3) - 1
                 );
     
