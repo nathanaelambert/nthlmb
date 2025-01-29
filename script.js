@@ -2,43 +2,11 @@ let scene, camera, renderer, terrain;
 
 let cubes = [];
 let styles = {}; // To store loaded styles
+let view_angle = 0; // Renamed from angle to view_angle
 
 function load_cube(cubeData) {
     const faceSize = 3;
-    const squareSize = 32; // Size of each square in pixels
-
-    const createFaceTexture = (faceData) => {
-        const canvas = document.createElement('canvas');
-        canvas.width = canvas.height = faceSize * squareSize;
-        const ctx = canvas.getContext('2d');
-
-        faceData.forEach((row, i) => {
-            row.forEach((cell, j) => {
-                ctx.fillStyle = cell ? styles.colors.white : styles.colors.black;
-                ctx.fillRect(j * squareSize, i * squareSize, squareSize, squareSize);
-            });
-        });
-
-        const texture = new THREE.CanvasTexture(canvas);
-        texture.minFilter = THREE.NearestFilter;
-        texture.magFilter = THREE.NearestFilter;
-        return texture;
-    };
-
-    return [
-        new THREE.MeshBasicMaterial({ map: createFaceTexture(cubeData.right) }),
-        new THREE.MeshBasicMaterial({ map: createFaceTexture(cubeData.left) }),
-        new THREE.MeshBasicMaterial({ map: createFaceTexture(cubeData.top) }),
-        new THREE.MeshBasicMaterial({ map: createFaceTexture(cubeData.bottom) }),
-        new THREE.MeshBasicMaterial({ map: createFaceTexture(cubeData.front) }),
-        new THREE.MeshBasicMaterial({ map: createFaceTexture(cubeData.back) })
-    ];
-}
-
-
-function load_terrain(terrainData) {
-    const faceSize = 3;
-    const textureSize = faceSize * 3; // 3x3 layout for 9 tiles
+    const textureSize = faceSize * 4; // 4x4 layout for 6 faces
     const canvas = document.createElement('canvas');
     canvas.width = canvas.height = textureSize * 32; // 32 pixels per grid square
     const ctx = canvas.getContext('2d');
@@ -46,17 +14,56 @@ function load_terrain(terrainData) {
     const drawFace = (faceData, x, y) => {
         faceData.forEach((row, i) => {
             row.forEach((cell, j) => {
-                ctx.fillStyle = cell ? 'white' : 'black';
+                ctx.fillStyle = cell ? styles.colors.white : styles.colors.black;
                 ctx.fillRect((x + j) * 32, (y + i) * 32, 32, 32);
             });
         });
     };
 
     // Draw faces on the canvas
-    for (let i = 0; i < 3; i++) {
-        for (let j = 0; j < 3; j++) {
-            const tileIndex = i * 3 + j;
-            drawFace(terrainData[`tile${tileIndex}`], j * faceSize, i * faceSize);
+    drawFace(cubeData.right, 0, faceSize);
+    drawFace(cubeData.left, faceSize * 2, faceSize);
+    drawFace(cubeData.top, faceSize, 0);
+    drawFace(cubeData.bottom, faceSize, faceSize * 2);
+    drawFace(cubeData.front, faceSize, faceSize);
+    drawFace(cubeData.back, faceSize * 3, faceSize);
+
+    // Create a texture from the canvas
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.minFilter = THREE.NearestFilter;
+    texture.magFilter = THREE.NearestFilter;
+
+    // Create a material with the texture
+    const material = new THREE.MeshBasicMaterial({ map: texture });
+
+    // Create and return a cube mesh
+    const geometry = new THREE.BoxGeometry();
+    const cube = new THREE.Mesh(geometry, material);
+
+    return cube;
+}
+
+function load_terrain(terrainData) {
+    const tileSize = 32; // Size of each tile in pixels
+    const gridSize = 3; // 3x3 grid for terrain
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = gridSize * tileSize; // Total texture size
+    const ctx = canvas.getContext('2d');
+
+    const drawTile = (tileData, x, y) => {
+        tileData.forEach((row, i) => {
+            row.forEach((cell, j) => {
+                ctx.fillStyle = cell ? 'white' : 'black';
+                ctx.fillRect((x + j) * tileSize, (y + i) * tileSize, tileSize, tileSize);
+            });
+        });
+    };
+
+    // Draw all tiles on the canvas
+    for (let i = 0; i < gridSize; i++) {
+        for (let j = 0; j < gridSize; j++) {
+            const tileIndex = i * gridSize + j;
+            drawTile(terrainData[`tile${tileIndex}`], j * tileSize, i * tileSize);
         }
     }
 
@@ -66,7 +73,7 @@ function load_terrain(terrainData) {
     texture.magFilter = THREE.NearestFilter;
 
     // Create a plane with the terrain texture
-    const geometry = new THREE.PlaneGeometry(9, 9);
+    const geometry = new THREE.PlaneGeometry(gridSize, gridSize); // Plane size matches the grid size
     const material = new THREE.MeshBasicMaterial({ map: texture });
     const plane = new THREE.Mesh(geometry, material);
     plane.rotation.x = -Math.PI / 2; // Rotate to lay flat
@@ -81,36 +88,34 @@ function orientCube(cube, orientation) {
         bottom: { x: Math.PI, y: 0, z: 0 },
         front: { x: -Math.PI / 2, y: 0, z: 0 },
         back: { x: Math.PI / 2, y: 0, z: 0 },
-        left: { x: 0, y: 0, z: -Math.PI / 2 },
-        right: { x: 0, y: 0, z: Math.PI / 2 }
+        left: { x: 0, y: Math.PI / 2, z: 0 },
+        right: { x: 0, y: -Math.PI / 2, z: 0 }
     };
 
     // Reset rotation
     cube.rotation.set(0, 0, 0);
 
-    // Apply rotations
-    cube.rotateX(rotations[faceUp].x);
-    cube.rotateY(rotations[faceUp].y);
-    cube.rotateZ(rotations[faceUp].z);
+    // Apply rotations based on the face facing up
+    cube.rotation.x += rotations[faceUp].x;
+    cube.rotation.y += rotations[faceUp].y;
+    cube.rotation.z += rotations[faceUp].z;
 
-    // Additional rotation for front face
+    // Additional rotation for the front-facing face
     if (faceUp !== 'top' && faceUp !== 'bottom') {
-        const frontRotation = new THREE.Euler().setFromRotationMatrix(
-            new THREE.Matrix4().makeRotationY(
-                ['front', 'left', 'back', 'right'].indexOf(faceFront) * Math.PI / 2
-            )
-        );
-        cube.rotation.x += frontRotation.x;
-        cube.rotation.y += frontRotation.y;
-        cube.rotation.z += frontRotation.z;
+        const frontRotationY = {
+            front: 0,
+            left: Math.PI / 2,
+            back: Math.PI,
+            right: -Math.PI / 2
+        };
+        cube.rotation.y += frontRotationY[faceFront];
     }
 }
-
 function init() {
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     renderer = new THREE.WebGLRenderer();
-    
+
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.getElementById('game-container').appendChild(renderer.domElement);
 
@@ -123,7 +128,7 @@ function init() {
     ])
     .then(([terrainData, loadedStyles, cubesData, levelsData]) => {
         styles = loadedStyles;
-        
+
         // Load terrain
         terrain = load_terrain(terrainData.terrain);
         scene.add(terrain);
@@ -135,34 +140,53 @@ function init() {
         for (let i = 0; i < 9; i++) {
             const tileData = level[`tile${i}`];
             if (tileData && tileData.cube) {
-                const materials = load_cube(cubesData[tileData.cube]);
-                const geometry = new THREE.BoxGeometry();
-                const cube = new THREE.Mesh(geometry, materials);
+                const cube = load_cube(cubesData[tileData.cube]);
                 
                 // Position cube
                 cube.position.set(
-                    (i % 3) * 3 - 3,
-                    0.5, // Slightly above the terrain
-                    Math.floor(i / 3) * 3 - 3
+                    (i % 3) - 1,
+                    0.5,
+                    Math.floor(i / 3) - 1
                 );
-
+    
                 // Orient cube
                 orientCube(cube, tileData.orientation);
-
+    
                 scene.add(cube);
                 cubes.push(cube);
             }
         }
 
-        // Set camera position
-        camera.position.set(5, 10, 15);
-        camera.lookAt(0, 0, 0);
+        // Set camera position and angle (3/4 view)
+        camera.position.set(3.5, 6.5, 7.5); // Above and at an angle
+        camera.lookAt(0, 0, 0); // Look at the center of the scene
     })
     .catch(error => console.error('Error loading data:', error));
+
+    updateCameraPosition();
+}
+
+function updateCameraPosition() {
+    const radius = 10; // Distance from the center
+    const heightAngle = Math.PI / 6; // Angle from the horizontal plane (30 degrees)
+
+    // Calculate new camera position
+    const x = radius * Math.cos(view_angle) * Math.cos(heightAngle);
+    const z = radius * Math.sin(view_angle) * Math.cos(heightAngle);
+    const y = radius * Math.sin(heightAngle);
+
+    camera.position.set(x, y, z);
+    camera.lookAt(0, 0, 0); // Always look at the center
 }
 
 function animate() {
     requestAnimationFrame(animate);
+
+    // Update camera position
+    view_angle += 0.005; // Adjust this value to change rotation speed
+    if (view_angle > Math.PI * 2) view_angle -= Math.PI * 2; // Reset angle after full rotation
+    updateCameraPosition();
+
     renderer.render(scene, camera);
 }
 
@@ -172,7 +196,7 @@ function onWindowResize() {
     renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
-window.addEventListener('resize', onWindowResize, false);
+window.addEventListener('resize', onWindowResize);
 
 init();
 animate();
