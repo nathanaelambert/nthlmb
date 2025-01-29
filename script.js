@@ -52,7 +52,7 @@ function load_cube(cubeData) {
 
     return materials;
 }
-}
+
 
 
 function init() {
