@@ -8,9 +8,11 @@ const UNIT_SIZE = 64; // size in Pixels
 const FACE_SIZE = 3;
 const GRID_SIZE = 3;
 
-function load_cube(cubeData, cubeName) {
 
-    const cubeColor = cubeName.split('_')[0];
+
+function load_cube(cubeData, cubeName, fixed) {
+
+    const cubeColor = fixed ? "black" : cubeName.split('_')[0];
     const createFaceTexture = (faceData, face) => {
         const canvas = document.createElement('canvas');
         canvas.width = canvas.height = FACE_SIZE * UNIT_SIZE;
@@ -47,6 +49,9 @@ function load_cube(cubeData, cubeName) {
 
     // Create and return a cube mesh
     const geometry = new THREE.BoxGeometry();
+    if (!geometry || materials.some(material => !material)) {
+        console.error('Invalid geometry or materials for cube:', cubeData);
+    }
     const cube = new THREE.Mesh(geometry, materials);
 
     return cube;
@@ -90,35 +95,95 @@ function load_terrain(terrainData) {
 }
 
 function orientCube(cube, orientation) {
-    const [faceUp, faceFront] = orientation;
-    const rotations = {
-        top: { x: 0, y: 0, z: 0 },
-        bottom: { x: Math.PI, y: 0, z: 0 },
-        front: { x: -Math.PI / 2, y: 0, z: 0 },
-        back: { x: Math.PI / 2, y: 0, z: 0 },
-        left: { x: 0, y: Math.PI / 2, z: 0 },
-        right: { x: 0, y: -Math.PI / 2, z: 0 }
-    };
 
-    // Reset rotation
+    const directionToAxis = {
+        front: new THREE.Vector3(0, 0, 1),
+        back: new THREE.Vector3(0, 0, -1),
+        top: new THREE.Vector3(0, 1, 0),
+        bottom: new THREE.Vector3(0, -1, 0),
+        left: new THREE.Vector3(-1, 0, 0),
+        right: new THREE.Vector3(1, 0, 0)
+    };
+    const [primaryDirection, secondaryDirection] = orientation;
+
+    // Reset cube's rotation
     cube.rotation.set(0, 0, 0);
 
-    // Apply rotations based on the face facing up
-    cube.rotation.x += rotations[faceUp].x;
-    cube.rotation.y += rotations[faceUp].y;
-    cube.rotation.z += rotations[faceUp].z;
+    // Align the primary direction (e.g., "front")
+    const primaryAxis = directionToAxis[primaryDirection];
+    const upAxis = directionToAxis[secondaryDirection];
 
-    // Additional rotation for the front-facing face
-    if (faceUp !== 'top' && faceUp !== 'bottom') {
-        const frontRotationY = {
-            front: 0,
-            left: Math.PI / 2,
-            back: Math.PI,
-            right: -Math.PI / 2
-        };
-        cube.rotation.y += frontRotationY[faceFront];
-    }
+    // Create quaternion for rotation
+    const quaternion = new THREE.Quaternion();
+    quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), upAxis); // Align "up" axis
+    cube.quaternion.multiply(quaternion);
+
+    const forwardQuaternion = new THREE.Quaternion();
+    forwardQuaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), primaryAxis); // Align "forward" axis
+    cube.quaternion.multiply(forwardQuaternion);
+
+    // Ensure rotation is applied correctly
+    cube.updateMatrixWorld();
 }
+
+
+
+
+export function loadLevel(levelNumber) { 
+    cubes = [];
+
+
+    while(scene.children.length > 0) { 
+        scene.remove(scene.children[0]); 
+    }
+    Promise.all([
+        fetch('terrain.json').then(response => response.json()),
+        fetch('cubes.json').then(response => response.json()),
+        fetch('levels.json').then(response => response.json())
+    ])
+    .then(([terrainData, cubesData, levelsData]) => {
+
+        // Load terrain
+        terrain = load_terrain(terrainData.terrain);
+        scene.add(terrain);
+        // Add a GridHelper
+        const gridHelper = new THREE.GridHelper(GRID_SIZE, GRID_SIZE, styles.colors.grid, styles.colors.grid); // Black lines
+        gridHelper.position.y = 0.01; // Slightly above the plane to avoid z-fighting
+        scene.add(gridHelper);
+
+    
+        // Load level data
+        const level = levelsData[`level_${String(levelNumber).padStart(3, '0')}`];
+
+        // Create and position each cube
+        for (let i = 0; i < 9; i++) {
+            const tileData = level[`tile${i}`];
+            if (tileData && tileData.cube) {
+                const cube = load_cube(cubesData[tileData.cube], tileData.cube, tileData.fixed);
+                cube.position.set(
+                    (i % 3) - 1,
+                    0.5,
+                    Math.floor(i / 3) - 1
+                );
+                orientCube(cube, tileData.orientation);
+
+                cubes.push(cube);
+            }
+        }
+
+        cubes.forEach(cube => {   scene.add(cube);   });
+        console.log(cubes);
+
+
+        scene.children.forEach(child => console.log(child));
+    })
+    .catch(error => console.error('Error loading level:', error));
+
+
+    
+     
+}
+
 function init() {
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -144,34 +209,6 @@ function init() {
         const gridHelper = new THREE.GridHelper(GRID_SIZE, GRID_SIZE, styles.colors.grid, styles.colors.grid); // Black lines
         gridHelper.position.y = 0.01; // Slightly above the plane to avoid z-fighting
         scene.add(gridHelper);
-
-        // Load level data
-        const level = levelsData.level_001;
-
-        // Create and position each cube
-        for (let i = 0; i < 9; i++) {
-            const tileData = level[`tile${i}`];
-            if (tileData && tileData.cube) {
-                const cube = load_cube(cubesData[tileData.cube], tileData.cube);
-                
-                //Position cube
-                cube.position.set(
-                    (i % 3) - 1,
-                    0.5,
-                    Math.floor(i / 3) - 1
-                );
-
-                console.log(`Cube ${i} position:`, cube.position);
-
-                 
-                // Orient cube
-                orientCube(cube, tileData.orientation);
-    
-                scene.add(cube);
-                cubes.push(cube);
-            }
-        }
-        console.log(cubes)
 
         // Set camera position and angle (3/4 view)
         camera.position.set(3.5, 6.5, 7.5); // Above and at an angle
@@ -199,7 +236,7 @@ function animate() {
     requestAnimationFrame(animate);
 
     // Update camera position
-    view_angle += 0.005; // Adjust this value to change rotation speed
+    //view_angle += 0.005; // Adjust this value to change rotation speed
     if (view_angle > Math.PI * 2) view_angle -= Math.PI * 2; // Reset angle after full rotation
     updateCameraPosition();
 

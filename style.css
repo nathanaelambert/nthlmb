@@ -5,4 +5,20 @@ body {
 #game-container {
     width: 100vw;
     height: 100vh;
+    position: absolute;
+    top: 0;
+    left: 0;
 }
+
+#level-buttons {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 1000; /* Add this line */
+  }
+  
+  #level-buttons button {
+    margin-right: 10px;
+    padding: 5px 10px;
+    font-size: 16px;
+  }
