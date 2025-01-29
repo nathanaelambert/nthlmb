@@ -4,7 +4,7 @@ let cubes = [];
 let styles = {}; // To store loaded styles
 let view_angle = 0; // Renamed from angle to view_angle
 
-const UNIT_SIZE = 32; // size in Pixels
+const UNIT_SIZE = 64; // size in Pixels
 const FACE_SIZE = 3;
 const GRID_SIZE = 3;
 
@@ -146,6 +146,7 @@ function init() {
             if (tileData && tileData.cube) {
                 const cube = load_cube(cubesData[tileData.cube]);
                 
+                console.log(i);
                 // Position cube
                 cube.position.set(
                     (i % 3) - 1,
