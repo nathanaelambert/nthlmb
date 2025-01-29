@@ -9,6 +9,7 @@ function init() {
     document.getElementById('game-container').appendChild(renderer.domElement);
 
     // Create a simple cube as a placeholder for your puzzle piece
+    
     const geometry = new THREE.BoxGeometry();
     const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
     cube = new THREE.Mesh(geometry, material);
