@@ -52,6 +52,8 @@ function load_cube(cubeData) {
 
     return materials;
 }
+}
+
 
 function init() {
     scene = new THREE.Scene();
@@ -65,6 +67,7 @@ function init() {
     fetch('green_cube.json')
         .then(response => response.json())
         .then(data => {
+            console.log('Cube data loaded:', data);
             const cubeData = data.green_cube;
             const materials = load_cube(cubeData);
             
@@ -74,7 +77,8 @@ function init() {
             scene.add(cube);
 
             camera.position.z = 5;
-        });
+        })
+        .catch(error => console.error('Error loading JSON:', error));
 }
 
 function animate() {
