@@ -1,8 +1,10 @@
 let scene, camera, renderer, cube;
 
+let styles = {}; // To store loaded styles
+
 function load_cube(cubeData) {
     const faceSize = 3;
-    const squareSize = 32;
+    const squareSize = 32; // Size of each square in pixels
 
     const createFaceTexture = (faceData) => {
         const canvas = document.createElement('canvas');
@@ -11,7 +13,7 @@ function load_cube(cubeData) {
 
         faceData.forEach((row, i) => {
             row.forEach((cell, j) => {
-                ctx.fillStyle = cell ? 'white' : 'black';
+                ctx.fillStyle = cell ? styles.colors.white : styles.colors.black;
                 ctx.fillRect(j * squareSize, i * squareSize, squareSize, squareSize);
             });
         });
@@ -32,6 +34,7 @@ function load_cube(cubeData) {
     ];
 }
 
+
 function init() {
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -40,22 +43,28 @@ function init() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.getElementById('game-container').appendChild(renderer.domElement);
 
-    fetch('green_cube.json')
-        .then(response => response.json())
-        .then(data => {
-            console.log('Cube data loaded:', data);
-            const cubeData = data.green_cube;
-            const materials = load_cube(cubeData);
+    // Load styles and cube data
+    Promise.all([
+        fetch('styles.json').then(response => response.json()),
+        fetch('green_cube.json').then(response => response.json())
+    ])
+    .then(([loadedStyles, cubeData]) => {
+        styles = loadedStyles; // Store loaded styles
+        console.log('Styles loaded:', styles);
 
-            const geometry = new THREE.BoxGeometry();
-            cube = new THREE.Mesh(geometry, materials);
-            scene.add(cube);
+        const materials = load_cube(cubeData.green_cube);
 
-            camera.position.set(0, 0, 5);
-            camera.lookAt(0, 0, 0);
-        })
-        .catch(error => console.error('Error loading JSON:', error));
+        // Create a cube with the loaded materials
+        const geometry = new THREE.BoxGeometry();
+        cube = new THREE.Mesh(geometry, materials);
+        scene.add(cube);
+
+        camera.position.set(0, 0, 5);
+        camera.lookAt(0, 0, 0);
+    })
+    .catch(error => console.error('Error loading data:', error));
 }
+
 
 function animate() {
     requestAnimationFrame(animate);
