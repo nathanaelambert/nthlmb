@@ -2,173 +2,221 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Nathanaël's Site</title>
+    <title>Nathanaël Lambert</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <nav class="navbar">
         <a href="#home" class="active">Home</a>
+        <a href="#about">About Me</a>
+        <a href="#projects">My Projects</a>
+        <a href="#portfolio">My Portfolio</a>
         <a href="/labyrinth/game.html">Game</a>
         <a href="https://memk.frama.io/">Comic</a>
 
     </nav>
 
     <header>
-        <h1>My Portfolio</h1>
-        <p>Explore my work below</p>
-      </header>
+      <h1>Nathanaël Lambert</h1>
+     
+    </header>
 
-    
-      <div class="portfolio-gallery">
-        <!--2021-->
-        <div class="portfolio-item" style="flex-basis: calc(50% - 20px);">
+    <main>
+
+      <section id="about">
+        <h2>About Me</h2>
+        <!-- Content about yourself -->
+      </section>
+  
+      <section id="projects">
+        <h2>My Projects</h2>
+
+        <details class="project" style="  background-image: linear-gradient(rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.6)), url('images/Catastici.png');">
+          <summary>
+              <h3>Widows of Venice in 1740</h3>
+              <p>Exploring Data from the past</p>
+          </summary>
+              <p>
+                This project examines the socio-economic status and property dynamics of widows in the 18th- and early 19th-century 
+                Venice, focusing on two historical datasets: the Catastici and the Sommarioni. By analyzing these 
+                records, the project aims to uncover patterns in property ownership, tenancy, and rent payments, providing 
+                insights into widows' roles and lives during this period.
+              </p>
+
+              <p>
+                My main role in this project was to analyze patterns in rent payed by widows, taking geographical,
+                social and cultural factors into account, using mathematical and statistical tools as well as vizualizations.
+                The analysis was done with the python library <a href="https://pandas.pydata.org/">pandas</a>. 
+              </p>
+
+              <p>
+                See the <a href="https://fdh.epfl.ch/index.php/Widows_in_Venice">project's wiki</a> for more detail.
+
+              </p>
+
+              <img src="images/Castello_noble.png" alt="A visual map showing widow owned proerties in the Castello District">
+              
+        </details>
+
+        <details class="project">
+          <summary class="project-title">
+              <h3>Blender Stuff</h3>
+              <p>A Blender Plugin to Generate Avatars</p>
+          </summary>
+              
+        </details>
+
+      </section>
+  
+      <section id="portfolio">
+        <h2>My Portfolio</h2>
+        <div class="portfolio-gallery">
+          <!--2021-->
+          <div class="portfolio-item" style="flex-basis: calc(50% - 20px);">
             <img src="images/HugShadow.png" alt="person with closed eyes hugging a white shadow" class="clickable-image">
             <div class="portfolio-item-info">
-                <h3>Hugging Shadows</h3>
-                <p>Digital painting with Krita (2021)</p>
+                  <h3>Hugging Shadows</h3>
+                  <p>Digital painting with Krita (2021)</p>
+                </div>
+              </div>
+              
+              <div class="portfolio-item" style="flex-basis: calc(50% - 20px)">
+                <img src="images/MorningColorFinal.png" alt="girl with airpods drinking hot chocolate" class="clickable-image">
+                <div class="portfolio-item-info">
+                  <h3>Morning Chocolate</h3>
+                  <p>Digital Painting With Blender and Krita (2021)</p>
+                </div>
+              </div>
+              
+              
+              <div class="portfolio-item" style="flex-basis: 100%;">
+                <img src="images/sailing.png" alt="small ship sailing into the sunset" class="clickable-image">
+              <div class="portfolio-item-info">
+                <h3>Bon Vent</h3>
+                <p>Digital Painting With Gimp (2021)</p>
+              </div>
             </div>
-        </div>
-           
-        <div class="portfolio-item" style="flex-basis: calc(50% - 20px)">
-            <img src="images/MorningColorFinal.png" alt="girl with airpods drinking hot chocolate" class="clickable-image">
-            <div class="portfolio-item-info">
-                <h3>Morning Chocolate</h3>
-                <p>Digital Painting With Blender and Krita (2021)</p>
+            <div class="portfolio-item" style="flex-basis: 50%;">
+              <img src="images/sea.png" alt="Blue waves" class="clickable-image">
+              <div class="portfolio-item-info">
+                <h3>Sea of Blue Crop</h3>
+                <p>Digital Painting With Krita (2021)</p>
+              </div>
             </div>
-        </div>
+            <div class="portfolio-item" style="flex-basis: 50%;">
+              <img src="images/symmetry_background.png" alt="Symmetric patterns" class="clickable-image">
+              <div class="portfolio-item-info">
+                <h3>Pareidolia</h3>
+                <p>Digital Painting With Krita (2021)</p>
+              </div>
+            </div>
+            <div class="portfolio-item" style="flex-basis: 100%;">
+              <img src="images/universe.png" alt="stary sky" class="clickable-image">
+              <div class="portfolio-item-info">
+                <h3>Out There</h3>
+                <p>Digital Painting With Krita (2021)</p>
+              </div>
+            </div>
+            <div class="portfolio-item" style="flex-basis:  calc(60% - 20px);">
+              <img src="images/baby1.png" alt="a foetus" class="clickable-image">
+              <div class="portfolio-item-info">
+                <h3>Flesh</h3>
+                <p>Digital Painting With Krita (2021)</p>
+              </div>
+            </div>
+            <div class="portfolio-item" style="flex-basis:  calc(40% - 20px);">
+              <img src="images/hugline.png" alt="a man and a woman hugging" class="clickable-image">
+              <div class="portfolio-item-info">
+                <h3>Thread</h3>
+                <p>Digital Painting with Krita (2021)</p>
+              </div>
+            </div>
+            <div class="portfolio-item" style="flex-basis: calc(50% - 20px);">
+              <img src="images/PlancheBasket.png" alt="a comic strip of someone playing basketball" class="clickable-image">
+              <div class="portfolio-item-info">
+                <h3>Basketball</h3>
+                <p>Mixed method painting on top of 3D render (2021)</p>
+              </div>
+            </div>
+            <!--2020--->
+          <div class="portfolio-item" style="flex-basis: calc(50% - 20px)">
+              <img src="images/tourPrendPion.png" alt="a comic about chess" class="clickable-image">
+              <div class="portfolio-item-info">
+                <h3>Tour Prend Pion</h3>
+                <p>Comic Strip about Chess (2020)</p>
+              </div>
+            </div>
+            <div class="portfolio-item" style="flex-basis: calc(70% - 20px);">
+              <img src="images/catapulte.png" alt="a 3D render of a war catapult" class="clickable-image">
+              <div class="portfolio-item-info">
+                <h3>Catapult</h3>
+                <p>3D render with Blender (2020)</p>
+              </div>
+            </div>
+            <div class="portfolio-item" style="flex-basis: calc(30% - 20px);">
+              <img src="images/portrait5Oreille.png" alt="a women with closed eyes" class="clickable-image">
+              <div class="portfolio-item-info">
+                <h3>Portrait Study</h3>
+                <p>Digital Painting (2020)</p>
+              </div>
+            </div>
             
-       
-        <div class="portfolio-item" style="flex-basis: 100%;">
-            <img src="images/sailing.png" alt="small ship sailing into the sunset" class="clickable-image">
-            <div class="portfolio-item-info">
-              <h3>Bon Vent</h3>
-              <p>Digital Painting With Gimp (2021)</p>
+            <!--2019-->
+            
+            
+            
+            <div class="portfolio-item" style="flex-basis: calc(40% - 20px); max-width: 500px;">
+              <img src="images/baliste.png" alt="a flat design of a ballista" class="clickable-image">
+              <div class="portfolio-item-info">
+                <h3>Ballista</h3>
+                <p>Digital Flat design with Krita (2019)</p>
+              </div>
             </div>
-        </div>
-        <div class="portfolio-item" style="flex-basis: 50%;">
-            <img src="images/sea.png" alt="Blue waves" class="clickable-image">
-            <div class="portfolio-item-info">
-              <h3>Sea of Blue Crop</h3>
-              <p>Digital Painting With Krita (2021)</p>
+            
+            <div class="portfolio-item" style="flex-basis:  calc(60% - 20px);">
+              <img src="images/cielAgenda.png" alt="a climber outside" class="clickable-image">
+              <div class="portfolio-item-info">
+                <h3>Couverture d'Agenda</h3>
+                <p>Digital Painting with GIMP (2019)</p>
+              </div>
             </div>
-        </div>
-        <div class="portfolio-item" style="flex-basis: 50%;">
-            <img src="images/symmetry_background.png" alt="Symmetric patterns" class="clickable-image">
-            <div class="portfolio-item-info">
-              <h3>Pareidolia</h3>
-              <p>Digital Painting With Krita (2021)</p>
+            
+            <div class="portfolio-item" style="flex-basis:   calc(60% - 20px);">
+              <img src="images/dragon.png" alt="a knight riding a dragon" class="clickable-image">
+              <div class="portfolio-item-info">
+                <h3>Dragon</h3>
+                <p>Scaned hand drawing colorised with GIMP (2019)</p>
+              </div>
             </div>
-        </div>
-        <div class="portfolio-item" style="flex-basis: 100%;">
-            <img src="images/universe.png" alt="stary sky" class="clickable-image">
-            <div class="portfolio-item-info">
-              <h3>Out There</h3>
-              <p>Digital Painting With Krita (2021)</p>
+            <div class="portfolio-item" style="flex-basis:  calc(40% - 20px);">
+              <img src="images/eleveur.png" alt="a bearded dwarf raising a goblin" class="clickable-image">
+              <div class="portfolio-item-info">
+                <h3>Goblin Breeder</h3>
+                <p>Scaned hand drawing colorised with GIMP (2019)</p>
+              </div>
             </div>
-        </div>
-        <div class="portfolio-item" style="flex-basis:  calc(60% - 20px);">
-            <img src="images/baby1.png" alt="a foetus" class="clickable-image">
-            <div class="portfolio-item-info">
-              <h3>Flesh</h3>
-              <p>Digital Painting With Krita (2021)</p>
+            <div class="portfolio-item" style="flex-basis:  calc(30% - 20px);">
+              <img src="images/chevalier lance.png" alt="a soldier in armor" class="clickable-image">
+              <div class="portfolio-item-info">
+                <h3>Soldier</h3>
+                <p>Scaned hand drawing colorised with GIMP (2019)</p>
+              </div>
             </div>
-        </div>
-        <div class="portfolio-item" style="flex-basis:  calc(40% - 20px);">
-            <img src="images/hugline.png" alt="a man and a woman hugging" class="clickable-image">
-            <div class="portfolio-item-info">
-              <h3>Thread</h3>
-              <p>Digital Painting with Krita (2021)</p>
-            </div>
-        </div>
-        <div class="portfolio-item" style="flex-basis: calc(50% - 20px);">
-            <img src="images/PlancheBasket.png" alt="a comic strip of someone playing basketball" class="clickable-image">
-            <div class="portfolio-item-info">
-              <h3>Basketball</h3>
-              <p>Mixed method painting on top of 3D render (2021)</p>
-            </div>
-        </div>
-        <!--2020--->
-        <div class="portfolio-item" style="flex-basis: calc(50% - 20px)">
-            <img src="images/tourPrendPion.png" alt="a comic about chess" class="clickable-image">
-            <div class="portfolio-item-info">
-              <h3>Tour Prend Pion</h3>
-              <p>Comic Strip about Chess (2020)</p>
-            </div>
-        </div>
-        <div class="portfolio-item" style="flex-basis: calc(70% - 20px);">
-            <img src="images/catapulte.png" alt="a 3D render of a war catapult" class="clickable-image">
-            <div class="portfolio-item-info">
-              <h3>Catapult</h3>
-              <p>3D render with Blender (2020)</p>
-            </div>
-        </div>
-        <div class="portfolio-item" style="flex-basis: calc(30% - 20px);">
-            <img src="images/portrait5Oreille.png" alt="a women with closed eyes" class="clickable-image">
-            <div class="portfolio-item-info">
-              <h3>Portrait Study</h3>
-              <p>Digital Painting (2020)</p>
-            </div>
-        </div>
-        
-        <!--2019-->
-        
-        
-
-        <div class="portfolio-item" style="flex-basis: calc(40% - 20px); max-width: 500px;">
-            <img src="images/baliste.png" alt="a flat design of a ballista" class="clickable-image">
-            <div class="portfolio-item-info">
-              <h3>Ballista</h3>
-              <p>Digital Flat design with Krita (2019)</p>
-            </div>
-        </div>
-      
-        <div class="portfolio-item" style="flex-basis:  calc(60% - 20px);">
-            <img src="images/cielAgenda.png" alt="a climber outside" class="clickable-image">
-            <div class="portfolio-item-info">
-              <h3>Couverture d'Agenda</h3>
-              <p>Digital Painting with GIMP (2019)</p>
-            </div>
-        </div>
-
-        <div class="portfolio-item" style="flex-basis:   calc(60% - 20px);">
-            <img src="images/dragon.png" alt="a knight riding a dragon" class="clickable-image">
-            <div class="portfolio-item-info">
-              <h3>Dragon</h3>
-              <p>Scaned hand drawing colorised with GIMP (2019)</p>
-            </div>
-        </div>
-        <div class="portfolio-item" style="flex-basis:  calc(40% - 20px);">
-            <img src="images/eleveur.png" alt="a bearded dwarf raising a goblin" class="clickable-image">
-            <div class="portfolio-item-info">
-              <h3>Goblin Breeder</h3>
-              <p>Scaned hand drawing colorised with GIMP (2019)</p>
-            </div>
-        </div>
-        <div class="portfolio-item" style="flex-basis:  calc(30% - 20px);">
-            <img src="images/chevalier lance.png" alt="a soldier in armor" class="clickable-image">
-            <div class="portfolio-item-info">
-              <h3>Soldier</h3>
-              <p>Scaned hand drawing colorised with GIMP (2019)</p>
-            </div>
-        </div>
-        <div class="portfolio-item" style="flex-basis:  calc(70% - 20px);">
+          <div class="portfolio-item" style="flex-basis:  calc(70% - 20px);">
             <img src="images/feu d'artifice.png" alt="a goblin lighting a firework" class="clickable-image">
             <div class="portfolio-item-info">
               <h3>Goblin on Fire</h3>
               <p>Scaned hand drawing colorised with GIMP (2019)</p>
             </div>
+          </div>
         </div>
-      </div>
-        
-        
-        
-        
-    
+      </section>
+    </main>
 
-      <footer>
-        <p>&copy; 2025 Nathanaël Lambert. All rights reserved.</p>
-      </footer>
+    <footer>
+      <p>&copy; 2025 Nathanaël Lambert. All rights reserved.</p>
+    </footer>
     
-      <script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
