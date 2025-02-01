@@ -250,7 +250,8 @@ main > * {
   margin-top: 10px;
 }
 
-.project > img {
+.project > img,
+.project > iframe {
   padding: 10px;
   flex: 2 1 500px;
   max-width: 100%;
@@ -260,6 +261,7 @@ main > * {
 
 /* New styles to position elements side by side */
 .project[open] > p,
+.project[open] > iframe,
 .project[open] > img {
   display: inline-block;
   vertical-align: top;
@@ -269,7 +271,9 @@ main > * {
 
 @media (max-width: 1000px) {
   .project[open] > p,
-  .project[open] > img {
+  .project[open] > img,
+  .project[open] > iframe
+   {
     width: 100%;
   }
 }
