@@ -72,22 +72,6 @@ document.querySelectorAll('.skill-tag').forEach(tag => {
 
 
 
-const parent = document.querySelector('.parent');
-const child = document.querySelector('.child');
-
-function adjustChildPosition() {
-  const parentRect = parent.getBoundingClientRect();
-  if (parentRect.top <= 0) {
-    child.style.position = 'fixed';
-  } else {
-    child.style.position = 'absolute';
-  }
-}
-
-window.addEventListener('scroll', adjustChildPosition);
-window.addEventListener('resize', adjustChildPosition);
-
-
 
 const navLogo = document.getElementById('macaron');
 const nav = document.querySelector('nav');
@@ -99,10 +83,16 @@ function adjustLogoSize() {
     navLogo.style.height = `${newHeight}px`;
     navLogo.style.width = `${newHeight}px`;
     navLogo.style.borderWidth = `${newHeight / 100 * 2/3}px`;
+    navLogo.style.alignSelf = 'flex-center';
+    navLogo.style.marginLeft = '20px';
+    nav.style.height = `${newHeight + 20}px`;
   } else {
     navLogo.style.height = '300px'; // Reset to original size
     navLogo.style.width = '300px'; 
     navLogo.style.borderWidth = `20px`;
+    navLogo.style.marginLeft = '50px';
+    navLogo.style.alignSelf = 'flex-end';
+    nav.style.height = '150px';
   }
   navLogo.style.width = navLogo.style.height;
 }
