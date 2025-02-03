@@ -70,3 +70,41 @@ document.querySelectorAll('.skill-tag').forEach(tag => {
   });
 });
 
+
+
+const parent = document.querySelector('.parent');
+const child = document.querySelector('.child');
+
+function adjustChildPosition() {
+  const parentRect = parent.getBoundingClientRect();
+  if (parentRect.top <= 0) {
+    child.style.position = 'fixed';
+  } else {
+    child.style.position = 'absolute';
+  }
+}
+
+window.addEventListener('scroll', adjustChildPosition);
+window.addEventListener('resize', adjustChildPosition);
+
+
+
+const navLogo = document.getElementById('macaron');
+const nav = document.querySelector('nav');
+
+function adjustLogoSize() {
+  const navRect = nav.getBoundingClientRect();
+  if (navRect.top <= 200) { // Adjust this value as needed
+    const newHeight = Math.max(60, 300 - (400 - navRect.top));
+    navLogo.style.height = `${newHeight}px`;
+    navLogo.style.width = `${newHeight}px`;
+    navLogo.style.borderWidth = `${newHeight / 100 * 2/3}px`;
+  } else {
+    navLogo.style.height = '300px'; // Reset to original size
+    navLogo.style.width = '300px'; 
+    navLogo.style.borderWidth = `20px`;
+  }
+  navLogo.style.width = navLogo.style.height;
+}
+
+window.addEventListener('scroll', adjustLogoSize);
