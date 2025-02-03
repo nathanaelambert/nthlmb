@@ -60,3 +60,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
   window.addEventListener('scroll', setActiveLink);
 });
 
+document.querySelectorAll('.skill-tag').forEach(tag => {
+  tag.addEventListener('click', () => {
+    const skillId = tag.getAttribute('data-skill');
+    const skillElement = document.getElementById(skillId);
+    if (skillElement) {
+      skillElement.scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+});
+
