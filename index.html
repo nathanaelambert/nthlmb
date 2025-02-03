@@ -6,14 +6,10 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <nav class="navbar">
-        <a href="#home" class="active">Home</a>
+    <nav>
         <a href="#about">About Me</a>
-        <a href="#projects">My Projects</a>
-        <a href="#portfolio">My Portfolio</a>
-        <a href="/labyrinth/game.html">Game</a>
-        <a href="https://memk.frama.io/">Comic</a>
-
+        <a href="#projects">Projects</a>
+        <a href="#portfolio">Portfolio</a>
     </nav>
 
     <header>
@@ -29,7 +25,7 @@
       </section>
   
       <section id="projects">
-        <h2>My Projects</h2>
+        <h2>Projects</h2>
 
         <details class="project" style="  background-image: linear-gradient(rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.6)), url('images/Catastici.png');">
           <summary>
@@ -80,26 +76,31 @@
             The prototype uses the excelent <a href="https://static.makehumancommunity.org/mpfb.html">MPFB</a> addon for blender.
           </p>
           <p>
-            See the <a href="https://dl.acm.org/doi/abs/10.1145/3641825.3689497">Research Paper</a> or check out the <a href="https://framagit.org/Leanathan/makebaby">source code</a>.
-          </p>
+            See the <a href="https://dl.acm.org/doi/abs/10.1145/3641825.3689497">Research Paper</a> 
+            or check out the <a href="https://framagit.org/Leanathan/makebaby">source code</a> 
+            or view the presentation <a href="https://www.youtube.com/watch?v=_Yg-gDRsE_M">video</a>.
+          </p>              
+        </details>
 
-          
-          
-          <iframe 
-            width="560" 
-            height="315"
-            src="https://www.youtube.com/embed/_Yg-gDRsE_M"
-            frameborder="0" 
-            allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen" 
-            allowfullscreen
-            title="Towards an Avatar Customization System for Semi-realistic Ethnically-diverse Virtual Reality Avatars"
-          ></iframe>
-
-          
+        <details class="project" style="  background-image: linear-gradient(rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.6)), url('images/cubes_game.jpg');">
+          <summary>
+              <h3>3D Labyrinth</h3>
+              <p>A puzzle game about changing one's perspective</p>
+          </summary>
+              <p>
+               I've always been fascinated with idea of making a board game with 3D logic. 
+               This puzzle game is a real 3D vision workout that is more about finding 
+               relevant point of views than trying a lot of different moves to find the one.
+              </p>
+                
+              <p>
+                I'm also working on implementing a <a href="/labyrinth/game.html">video game</a> of version.
+              </p>
+              <img src="images/cubes_compressed.gif" alt="A playthrough of the puzzle game">
               
         </details>
 
-        <details class="project" style="  background-image: linear-gradient(rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.6)), url('https://cloud.disroot.org/apps/files_sharing/publicpreview/N2S5Sd3iHrZnrGp?file=/&fileId=267150112&x=3456&y=2178&a=true&etag=0240c68dd975031bb8577588ce98cbe7');">
+        <details class="project" style="  background-image: linear-gradient(rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.6)), url('images/memk.png');">
           <summary>
               <h3>MEMK</h3>
               <p>My adventures in Canada in comics</p>
@@ -123,7 +124,7 @@
       </section>
   
       <section id="portfolio">
-        <h2>My Portfolio</h2>
+        <h2>Portfolio</h2>
         <div class="portfolio-gallery">
           <!--2021-->
           <div class="portfolio-item" style="flex-basis: calc(50% - 20px);">
