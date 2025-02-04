@@ -24,9 +24,10 @@
 }
 
 
-h1, h2, p, li {
+h1, h2, h3, p, li {
   color: var(--text-color);
 }
+
 
 main{
   background-color: var(--background-color);
@@ -318,7 +319,7 @@ nav a.active::after {
   border-color: white;
 }
 
-.project a, p, h2, h3 {
+.project a, p, h3 {
   color: white;
 }
 
