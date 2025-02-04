@@ -1,32 +1,50 @@
-/* General Reset */
 :root {
-  --primary-color: #3498db;
-  --secondary-color: #2ecc71;
-  --text-color: #333333;
+  --text-color:  black;
+  --footer-color: white;
   --background-color: #f5f5f5;
+  
+  --font-family: Helvetica, sans-serif;
+  --footer-font-size: 0.7rem;
+  --font-size: 1.0rem;
+  
+  --text-size: 14px;
+  --line-height: 1.6;
+  --section-padding: 10%;
+  --nav-padding: 10px;
+  --nav-link-margin: 15px;
+  --section-bottom-margin: 30px;
+  --macaron-size: 300px;
+  --macaron-left-margin: 50px;
+  --macaron-right-margin: 20px;
+  --gallery-gap: 20px;
+  --portfolio-items-width: 300px;
+  --portfolio-items-height: 500px;
+  --about-height: 500px;
+
 }
 
-a {
-  font-weight: bold !important;
-  text-decoration: none;
-  color: white;
-  position: relative;
-  cursor: pointer;
-}
 
 h1, h2, p, li {
-  color: white;
+  color: var(--text-color);
 }
 
 main{
-  background-color: #333;
+  background-color: var(--background-color);
   position: relative;
   z-index: 2;
 }
 
 main > section:not(#about, #resume) {
-  padding: 10%;
-  margin-bottom: 30px;
+  padding: var(--section-padding);
+  margin-bottom: var(--section-bottom-margin);
+}
+
+a {
+  font-weight: bold !important;
+  text-decoration: none;
+  color: var(--text-color);
+  position: relative;
+  cursor: pointer;
 }
 
 a::after {
@@ -34,9 +52,9 @@ a::after {
   position: absolute;
   width: 100%;
   height: 2px;
-  bottom: -2px; /* Adjust this value to position the line */
+  bottom: -2px;
   left: 0;
-  background-color: white; /* Or any color you prefer */
+  background-color: var(--text-color);
   transform: scaleX(0);
   transition: transform 0.25s ease-out;
 }
@@ -45,117 +63,65 @@ a:hover::after {
   transform: scaleX(1);
 }
 
-
-
-
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-
 footer {
-  /* position: fixed; */
   bottom: 0;
   left: 0;
   width: 100%;
   text-align: center;
   padding: 5px;
-  font-size: 0.7rem; /* Smaller font size */
-  background-color: #333; /* Optional: light background */
-  box-shadow: 0 -1px 5px rgba(0,0,0,0.1); /* Optional: subtle top shadow */
+  font-size: var(--footer-font-size);
+  background-color: var(var(--background-color));
+  box-shadow: 0 -1px 5px rgba(0,0,0,0.1); 
 }
 
 body {
   margin: 0;
-  font-family: Helvetica, sans-serif;
-  line-height: 1.6;
+  font-family: var(--font-family);
+  line-height: var(--line-height);
 }
-
-/* Header Styling */
-/* .background {
-  overflow: hidden;
-  position: sticky;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: auto;
-  z-index: 1;
-
-}
-
-.background > img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: bottom;
-} */
-
-h1 {
-  color:white;
-  background-color: #333;
-  text-align: right;
-  position: -webkit-sticky;
-  position: sticky;
-  top: 0;
-  /* z-index: 2000; */
-  margin-right: 10px;
-  font-size: 1rem;
-  transition: font-size 0.3s ease;
-}
-
-h1.stuck {
-  font-size: 0.5rem;
-
-}
-
-
 
 #macaron {
   aspect-ratio: 1 / 1;
-  width: 300px;
+  width: var(--macaron-size);
   height: auto;
   border-radius: 50%;
-  border-color: white;
   object-fit: cover;
   object-position: 60% 0px; 
   z-index: 4;
   padding: 0;
-  margin-right: 20px;
-  margin-left: 50px;
-  border: 20px solid #333; 
-
-
+  margin-right: var(--macaron-right-margin);
+  margin-left: var(--macaron-left-margin);
+  border: 20px solid var(--background-color); 
   transition: height 0.5s ease, width 0.5s ease, border-width 0.5s ease;
   align-self: flex-end;
-  
 }
 
 nav {
   display: flex;
-  background-color: #333;
-  padding: 10px 0;
+  background-color: var(--background-color);
+  padding: var(--nav-padding) 0;
   position: sticky;
   top: 0;
   z-index: 3;
   align-items: center;
-  height: 150px;
-  
+  height: calc(var(--macaron-size) / 2);
 }
 
 nav a {
   font-weight: bold;
   text-decoration: none;
-  color: white;
+  color: var(--text-color);
   position: relative;
   cursor: pointer;
-  margin: 0 15px;
+  margin: 0 var(--nav-link-margin);
   align-self: flex-center;
 }
-
-
 
 nav a::after {
   content: '';
@@ -163,7 +129,7 @@ nav a::after {
   height: 2px;
   bottom: -2px;
   left: 0;
-  background-color: white;
+  background-color: var(--text-color);
   transform: scaleX(0);
   transform-origin: center;
   transition: transform 0.25s ease-out;
@@ -177,23 +143,17 @@ nav a.active::after {
   transform: scaleX(1);
 }
 
-
-header p {
-  font-size: 1rem;
-}
-
-/* Portfolio Gallery Styling */
 .portfolio-gallery {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
+  gap: var(--gallery-gap);
 }
 
 .portfolio-item {
-  flex: 1 1 300px;
-  max-height: 500px;
+  flex: 1 1 var(--portfolio-items-width);
+  max-height: var(--portfolio-items-height);
   position: relative;
-  border-radius: 5px; 
+  border-radius: calc(var(--gallery-gap) / 4); 
   overflow: hidden;
   cursor: pointer; 
 }
@@ -213,12 +173,12 @@ header p {
   background-color: rgba(0,0,0,0.7);
   color: white;
   padding: 10px;
-  opacity: 0; /* Hidden by default */
+  opacity: 0;
   transition: opacity .3s ease-in-out;
 }
   
 .portfolio-item:hover .portfolio-item-info {
-  opacity: 1; /* Show on hover */
+  opacity: 1;
 }
 
 .overlay {
@@ -253,19 +213,18 @@ header p {
 }
 
 .fullsize-overlay img {
-    max-width: 90%;
-    max-height: 90%;
-    object-fit: contain;
+  max-width: 90%;
+  max-height: 90%;
+  object-fit: contain;
+  cursor: pointer;
 }
-
-
 
 #about {
   position: relative;
   background-image: url("images/sky.jpg");
   background-size: cover;
   background-position: left bottom;
-  height: 500px;
+  height: var(--about-height);
   width: 100%;
   background-repeat: no-repeat;
   color: white;
@@ -273,7 +232,13 @@ header p {
 
 }
 
+#about p, h3, h2, a{
+  color: white;
+}
 
+#about a::after {
+  background-color: white;
+}
 
 #about svg {
   width: 40px;
@@ -294,9 +259,6 @@ header p {
 }
 
 .icon-circle{
-  --radius: 530px;
-  --unit-angle: -6deg;
-  --offset-angle: -0deg;
   position: relative;
   width: 100%;
   height: 500px;
@@ -309,16 +271,10 @@ header p {
 }
 
 .icon-position {
-  --n : 0;
   display: flex;
   align-items: left;
   bottom: 0;
   gap: 10px;
-  /* transform: translate(-170px) rotate(calc((var(--n) - 1) * var(--unit-angle) + var(--offset-angle))) translate(var(--radius)); */
-}
-
-.icon-position > * {
-  /* align-self: flex-center; */
 }
 
 .icon-position > p {
@@ -329,22 +285,20 @@ header p {
 
 
 #resume{
-  padding: 10%;
+  padding: var(--section-padding);
 }
 
 #projects { 
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--gallery-gap);
 }
-
-
 
 .skill-tags {
   display: flex;
   flex-wrap: wrap;
   padding: 10px;
-  gap: 8px; /* This adds space between the tags */
+  gap: 8px; 
 }
 
 .skill-tag {
@@ -362,18 +316,16 @@ header p {
 
 .skill-tag:hover {
   border-color: white;
-  
 }
 
-
-.project > a {
+.project a, p, h2, h3 {
   color: white;
 }
 
-.project > a::after {
-
+.project a::after {
   background-color: white; /* Or any color you prefer */
 }
+
 .project { 
   border-radius: 5px;
   overflow: hidden;
@@ -417,7 +369,7 @@ header p {
 }
 
 .project[open] > summary {
-  height: 100px;
+  height: 150px;
 }
 
 
