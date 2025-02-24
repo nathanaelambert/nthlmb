@@ -183,6 +183,11 @@ nav a.active::after {
   opacity: 0;
   transition: opacity .3s ease-in-out;
 }
+
+.portfolio-item-info > p,h3 {
+  color: white;
+}
+
   
 .portfolio-item:hover .portfolio-item-info {
   opacity: 1;
@@ -195,6 +200,7 @@ nav a.active::after {
     width: 100vw;
     height: 100vh;
     background-color: rgba(0,0,0,0.8);
+    color: white;
     display: flex;
     justify-content: center;
     align-items: center;
