@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Tone.js Sound with Line Obstacles</title>
+  <script src="https://unpkg.com/tone"></script>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #222;
+    }
+    canvas {
+      background: #fff;
+      display: block;
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="soundCanvas" width="360" height="640"></canvas>
+  <script>
+    // Utility: Map canvas coords to 3D space
+    function canvasTo3D(x, y, width, height) {
+      const px = ((x / width) - 0.5) * 4;
+      const py = ((y / height) - 0.5) * 4;
+      return { x: px, y: py, z: 0 };
+    }
+
+    // Utility: Line segment intersection
+    function linesIntersect(x1, y1, x2, y2, x3, y3, x4, y4) {
+      // Using determinant method
+      function ccw(ax, ay, bx, by, cx, cy) {
+        return (cy - ay) * (bx - ax) > (by - ay) * (cx - ax);
+      }
+      return (ccw(x1, y1, x3, y3, x4, y4) !== ccw(x2, y2, x3, y3, x4, y4)) &&
+             (ccw(x1, y1, x2, y2, x3, y3) !== ccw(x1, y1, x2, y2, x4, y4));
+    }
+
+    // Obstacle class (as a line)
+    class Obstacle {
+      constructor({x1, y1, x2, y2, color="#444", thickness=4, absorbingFactor=0.6}) {
+        this.x1 = x1;
+        this.y1 = y1;
+        this.x2 = x2;
+        this.y2 = y2;
+        this.color = color;
+        this.thickness = thickness;
+        this.absorbingFactor = absorbingFactor;
+      }
+
+      draw(ctx) {
+        ctx.save();
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = this.thickness;
+        ctx.beginPath();
+        ctx.moveTo(this.x1, this.y1);
+        ctx.lineTo(this.x2, this.y2);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // Returns true if the line from (sx, sy) to (ex, ey) crosses this obstacle
+      crosses(sx, sy, ex, ey) {
+        return linesIntersect(sx, sy, ex, ey, this.x1, this.y1, this.x2, this.y2);
+      }
+    }
+
+    // Source class
+    class Source {
+      constructor({x, y, shape, color, soundUrl, intervalMs, action, radius=20}) {
+        this.x = x;
+        this.y = y;
+        this.shape = shape;
+        this.color = color;
+        this.soundUrl = soundUrl;
+        this.intervalMs = intervalMs;
+        this.action = action;
+        this.radius = radius;
+
+        // Tone.js setup
+        this.player = new Tone.Player(this.soundUrl);
+        this.stereoPanner = new Tone.Panner(0);
+        this.panner = new Tone.Panner3D().toDestination();
+        this.player.chain(this.stereoPanner, this.panner);
+
+        this.lastPlay = 0;
+      }
+
+      draw(ctx) {
+        ctx.save();
+        ctx.beginPath();
+        if (this.shape === 'circle') {
+          ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
+        }
+        ctx.fillStyle = this.color;
+        ctx.fill();
+        ctx.restore();
+      }
+
+      isPointInside(px, py) {
+        if (this.shape === 'circle') {
+          const dx = px - this.x;
+          const dy = py - this.y;
+          return dx*dx + dy*dy <= this.radius*this.radius;
+        }
+        return false;
+      }
+
+      async tryPlay(mouse, width, height, obstacles) {
+        if (!mouse.inside) return;
+        const now = Date.now();
+        if (now - this.lastPlay < this.intervalMs) return;
+        this.lastPlay = now;
+
+        await Tone.start();
+
+        let mx = mouse.x ?? this.x;
+        let my = mouse.y ?? this.y;
+
+        // Check for obstacle intersection and absorption
+        let gain = 1;
+        obstacles.forEach(ob => {
+          if (ob.crosses(this.x, this.y, mx, my)) {
+            gain *= (1 - ob.absorbingFactor);
+          }
+        });
+
+        // Distance for gain
+        const dx = mx - this.x;
+        const dy = my - this.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const maxDist = Math.sqrt((width/2)**2 + (height/2)**2);
+        gain *= 1 - Math.min(dist / maxDist, 1);
+
+        // Stereo pan
+        const pan = Math.max(-1, Math.min(1, (this.x - mx) / (width / 2)));
+        this.stereoPanner.pan.value = pan;
+
+        // Listener position (mouse)
+        const listenerPos = canvasTo3D(mx, my, width, height);
+        Tone.Listener.positionX.value = listenerPos.x;
+        Tone.Listener.positionY.value = listenerPos.y;
+        Tone.Listener.positionZ.value = 1;
+
+        // Source position (dot)
+        const dot3D = canvasTo3D(this.x, this.y, width, height);
+        this.panner.positionX.value = dot3D.x;
+        this.panner.positionY.value = dot3D.y;
+        this.panner.positionZ.value = 0;
+
+        // Volume
+        this.player.volume.value = Tone.gainToDb(gain);
+
+        this.player.start();
+      }
+    }
+
+    // Canvas setup
+    const canvas = document.getElementById('soundCanvas');
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+
+    // Mouse tracking
+    let mouse = { x: null, y: null, inside: false };
+
+    canvas.addEventListener('mousemove', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      mouse.x = e.clientX - rect.left;
+      mouse.y = e.clientY - rect.top;
+    });
+
+    canvas.addEventListener('mouseenter', () => { mouse.inside = true; });
+    canvas.addEventListener('mouseleave', () => { mouse.inside = false; });
+
+    // Handle click for actions
+    canvas.addEventListener('click', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+      sources.forEach(source => {
+        if (source.isPointInside(mx, my)) {
+          if (source.action) source.action();
+        }
+      });
+    });
+
+    // Create line obstacles (a box around the dot)
+    const boxX = width/2 - 70, boxY = height/2 - 70, boxW = 140, boxH = 140;
+    const obstacles = [
+      new Obstacle({ x1: boxX, y1: boxY, x2: boxX + boxW, y2: boxY }), // Top
+      new Obstacle({ x1: boxX + boxW, y1: boxY, x2: boxX + boxW, y2: boxY + boxH }), // Right
+      new Obstacle({ x1: boxX + boxW, y1: boxY + boxH, x2: boxX, y2: boxY + boxH }), // Bottom
+      new Obstacle({ x1: boxX, y1: boxY + boxH, x2: boxX, y2: boxY }), // Left
+    ];
+
+    // Create sources
+    const sources = [
+      new Source({
+        x: width/2,
+        y: height/2,
+        shape: 'circle',
+        color: 'red',
+        soundUrl: "https://tonejs.github.io/audio/berklee/gong_1.mp3",
+        intervalMs: 2000,
+        action: () => alert('Red dot clicked!')
+      }),
+    ];
+
+    // Animation and sound loop
+    function loop() {
+      ctx.clearRect(0, 0, width, height);
+      obstacles.forEach(ob => ob.draw(ctx));
+      sources.forEach(source => {
+        source.draw(ctx);
+        source.tryPlay(mouse, width, height, obstacles);
+      });
+      requestAnimationFrame(loop);
+    }
+    loop();
+  </script>
+</body>
+</html>
