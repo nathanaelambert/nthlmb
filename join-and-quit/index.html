@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Game Table Timer</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <!-- Caudex font -->
-  <link href="https://fonts.googleapis.com/css?family=Caudex:400,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Caudex:400,700&display=swap" rel="stylesheet" />
   <style>
     html, body {
       height: 100%;
@@ -80,9 +80,38 @@
       text-shadow: 0 2px 8px #000, 0 0px 2px #000;
       font-family: 'Caudex', serif;
     }
+
+    /* Fullscreen toggle button */
+    #fullscreenToggle {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      background: rgba(0,0,0,0.3);
+      border: 2px solid #bbb;
+      border-radius: 0.5em;
+      color: #fff;
+      font-size: 1.5em;
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      display: none; /* hidden initially */
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      transition: border 0.2s, background 0.2s;
+      z-index: 1000;
+    }
+    #fullscreenToggle:hover, #fullscreenToggle:focus {
+      border-color: #fff;
+      background: rgba(0,0,0,0.5);
+      outline: none;
+    }
   </style>
 </head>
 <body>
+  <!-- Fullscreen toggle -->
+  <button id="fullscreenToggle" aria-label="Toggle fullscreen" title="Toggle fullscreen">⛶</button>
+
   <!-- Table selection -->
   <div id="tableSelect">
     <h1>Select your table</h1>
@@ -130,6 +159,35 @@
     let preTimerInterval = null;
     let gameTimerInterval = null;
 
+    // Elements
+    const fullscreenBtn = document.getElementById('fullscreenToggle');
+
+    // Show fullscreen toggle only after table is chosen
+    function showFullscreenToggle(show) {
+      fullscreenBtn.style.display = show ? 'flex' : 'none';
+    }
+
+    fullscreenBtn.addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          alert(`Error attempting to enable fullscreen: ${err.message} (${err.name})`);
+        });
+      } else {
+        document.exitFullscreen();
+      }
+    });
+
+    // Update button icon on fullscreen change
+    document.addEventListener('fullscreenchange', () => {
+      if (document.fullscreenElement) {
+        fullscreenBtn.textContent = '×'; // exit icon
+        fullscreenBtn.title = "Exit fullscreen";
+      } else {
+        fullscreenBtn.textContent = '⛶'; // enter fullscreen icon
+        fullscreenBtn.title = "Enter fullscreen";
+      }
+    });
+
     // Set background image and overlay
     function setBackground(imgUrl) {
       document.body.classList.add('has-bg');
@@ -143,6 +201,8 @@
       document.getElementById('tableSelect').classList.add('hidden');
       document.getElementById('startScreen').classList.remove('hidden');
       document.getElementById('chosenTableName').textContent = TABLES[tableKey].name;
+
+      showFullscreenToggle(true);
     }
 
     // Start pre-game timer
