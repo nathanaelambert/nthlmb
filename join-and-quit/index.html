@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Game Table Timer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #111;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      min-width: 100vw;
+      color: #fff;
+      position: relative;
+      z-index: 1;
+      overflow: hidden;
+    }
+    body.has-bg::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      z-index: -2;
+      background: var(--bg-url) center center / cover no-repeat;
+      width: 100vw;
+      height: 100vh;
+    }
+    body.has-bg::after {
+      content: "";
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      z-index: -1;
+      background: rgba(0,0,0,0.3);
+      width: 100vw;
+      height: 100vh;
+    }
+    .hidden { display: none; }
+    .big-btn {
+      font-size: 2em; padding: 1em 2em; margin: 1em; border-radius: 1em;
+      border: none; background: #4B93FF; color: white; cursor: pointer;
+      width: 80%; max-width: 400px; display: block; margin-left: auto; margin-right: auto;
+      transition: background 0.2s;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      font-weight: bold;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    }
+    .big-btn.selected { background: #2d6ad6; }
+    #timers { margin-top: 2em; }
+    .timer-label { font-size: 1.2em; margin: 0.5em 0; }
+    .main-timer { font-size: 3em; margin: 0.5em 0; font-weight: bold; }
+    .other-timers { font-size: 1.5em; margin: 0.5em 0; }
+    #gameStartMsg { font-size: 2em; color: #2ecc40; margin: 1em 0; text-shadow: 0 2px 8px #000; }
+    h1, h2, h3, .timer-label, .main-timer, .other-timers, #gameStartMsg {
+      color: #fff;
+      text-shadow: 0 2px 8px #000, 0 0px 2px #000;
+    }
+  </style>
+</head>
+<body>
+  <!-- Table selection -->
+  <div id="tableSelect">
+    <h1>Select your table</h1>
+    <button class="big-btn" onclick="chooseTable('village')">Village</button>
+    <button class="big-btn" onclick="chooseTable('castle')">Castle</button>
+    <button class="big-btn" onclick="chooseTable('forest')">Forest</button>
+  </div>
+
+  <!-- Start button -->
+  <div id="startScreen" class="hidden">
+    <h1>You are at: <span id="chosenTableName"></span></h1>
+    <button class="big-btn" onclick="startPreTimer()">Start Game</button>
+  </div>
+
+  <!-- Pre-timer -->
+  <div id="preTimerScreen" class="hidden">
+    <h2>Game will start in <span id="preTimer">1:59</span> min<br>Please sit</h2>
+  </div>
+
+  <!-- Game start message -->
+  <div id="gameStartMsg" class="hidden">
+    Game Start!
+  </div>
+
+  <!-- Timers -->
+  <div id="timers" class="hidden">
+    <h2 id="tableName"></h2>
+    <div class="timer-label">Time left at this table:</div>
+    <div class="main-timer" id="mainTimer"></div>
+    <div class="timer-label">Other tables:</div>
+    <div class="other-timers" id="otherTimers"></div>
+  </div>
+
+  <script>
+    // Table timer durations in seconds
+    const TABLES = {
+      village: { name: 'Village', duration: 10 * 60, bg: 'images/village.jpg' },
+      castle: { name: 'Castle', duration: 11 * 60, bg: 'images/castle.jpg' },
+      forest: { name: 'Forest', duration: 12 * 60, bg: 'images/forest.jpg' }
+    };
+
+    let chosenTable = null;
+    let startTime = null;
+    let preTimerInterval = null;
+    let gameTimerInterval = null;
+
+    // Set background image and overlay
+    function setBackground(imgUrl) {
+      document.body.classList.add('has-bg');
+      document.body.style.setProperty('--bg-url', `url('${imgUrl}')`);
+    }
+
+    // Table selection logic
+    function chooseTable(tableKey) {
+      chosenTable = tableKey;
+      setBackground(TABLES[tableKey].bg);
+      document.getElementById('tableSelect').classList.add('hidden');
+      document.getElementById('startScreen').classList.remove('hidden');
+      document.getElementById('chosenTableName').textContent = TABLES[tableKey].name;
+    }
+
+    // Start pre-game timer
+    function startPreTimer() {
+      document.getElementById('startScreen').classList.add('hidden');
+      document.getElementById('preTimerScreen').classList.remove('hidden');
+      let preTimeLeft = 119; // 1:59 in seconds
+
+      document.getElementById('preTimer').textContent = formatTime(preTimeLeft);
+      preTimerInterval = setInterval(() => {
+        preTimeLeft--;
+        document.getElementById('preTimer').textContent = formatTime(preTimeLeft);
+        if (preTimeLeft <= 0) {
+          clearInterval(preTimerInterval);
+          startGameTimers();
+        }
+      }, 1000);
+    }
+
+    // Start main game timers
+    function startGameTimers() {
+      document.getElementById('preTimerScreen').classList.add('hidden');
+      document.getElementById('gameStartMsg').classList.remove('hidden');
+      setTimeout(() => {
+        document.getElementById('gameStartMsg').classList.add('hidden');
+        document.getElementById('timers').classList.remove('hidden');
+        runGameTimers();
+      }, 1500); // Show "Game Start!" for 1.5 seconds
+
+      // Record the absolute start time
+      startTime = Date.now();
+    }
+
+    // Run and update all timers
+    function runGameTimers() {
+      document.getElementById('tableName').textContent = TABLES[chosenTable].name;
+
+      gameTimerInterval = setInterval(() => {
+        const now = Date.now();
+        const elapsed = Math.floor((now - startTime) / 1000);
+
+        // Main timer
+        const mainDuration = TABLES[chosenTable].duration;
+        const mainTimeLeft = Math.max(0, mainDuration - elapsed);
+        document.getElementById('mainTimer').textContent = formatTime(mainTimeLeft);
+
+        // Other timers
+        let otherHTML = '';
+        for (const [key, table] of Object.entries(TABLES)) {
+          if (key !== chosenTable) {
+            const otherTimeLeft = Math.max(0, table.duration - elapsed);
+            otherHTML += `<div>${table.name}: ${formatTime(otherTimeLeft)}</div>`;
+          }
+        }
+        document.getElementById('otherTimers').innerHTML = otherHTML;
+
+        // Stop updating when all timers are done
+        if (mainTimeLeft === 0 &&
+            Object.entries(TABLES).every(([key, t]) => (t.duration - elapsed) <= 0)) {
+          clearInterval(gameTimerInterval);
+        }
+      }, 500);
+    }
+
+    // Format seconds as M:SS
+    function formatTime(secs) {
+      const m = Math.floor(secs / 60);
+      const s = secs % 60;
+      return `${m}:${s.toString().padStart(2, '0')}`;
+    }
+  </script>
+</body>
+</html>
