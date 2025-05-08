@@ -14,16 +14,19 @@
     }
     body {
       font-family: 'Caudex', serif;
-      text-align: center;
+
       background: #111;
-      margin: 0;
-      padding: 0;
+      color: #fff;
+      
       min-height: 100vh;
       min-width: 100vw;
-      color: #fff;
       position: relative;
       z-index: 1;
       overflow: hidden;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     body.has-bg::before {
       content: "";
