@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <title>Game Table Timer</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Caudex font -->
+  <link href="https://fonts.googleapis.com/css?family=Caudex:400,700&display=swap" rel="stylesheet">
   <style>
     html, body {
       height: 100%;
@@ -11,7 +13,7 @@
       padding: 0;
     }
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Caudex', serif;
       text-align: center;
       background: #111;
       margin: 0;
@@ -43,23 +45,40 @@
     }
     .hidden { display: none; }
     .big-btn {
-      font-size: 2em; padding: 1em 2em; margin: 1em; border-radius: 1em;
-      border: none; background: #4B93FF; color: white; cursor: pointer;
-      width: 80%; max-width: 400px; display: block; margin-left: auto; margin-right: auto;
-      transition: background 0.2s;
+      font-size: 2em;
+      padding: 1em 2em;
+      margin: 1em;
+      border-radius: 1em;
+      border: 2px solid #bbb;
+      background: rgba(0,0,0,0.3);
+      color: #fff;
+      cursor: pointer;
+      width: 80%;
+      max-width: 400px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+      transition: border 0.2s, background 0.2s;
       box-shadow: 0 4px 16px rgba(0,0,0,0.2);
       font-weight: bold;
       text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+      font-family: 'Caudex', serif;
     }
-    .big-btn.selected { background: #2d6ad6; }
+    .big-btn.selected { border-color: #fff; }
+    .big-btn:hover, .big-btn:focus {
+      border-color: #fff;
+      background: rgba(0,0,0,0.5);
+      outline: none;
+    }
     #timers { margin-top: 2em; }
     .timer-label { font-size: 1.2em; margin: 0.5em 0; }
     .main-timer { font-size: 3em; margin: 0.5em 0; font-weight: bold; }
     .other-timers { font-size: 1.5em; margin: 0.5em 0; }
     #gameStartMsg { font-size: 2em; color: #2ecc40; margin: 1em 0; text-shadow: 0 2px 8px #000; }
-    h1, h2, h3, .timer-label, .main-timer, .other-timers, #gameStartMsg {
+    h1, h2, h3, .timer-label, .main-timer, .other-timers, #gameStartMsg, p {
       color: #fff;
       text-shadow: 0 2px 8px #000, 0 0px 2px #000;
+      font-family: 'Caudex', serif;
     }
   </style>
 </head>
@@ -74,13 +93,14 @@
 
   <!-- Start button -->
   <div id="startScreen" class="hidden">
-    <h1>You are at: <span id="chosenTableName"></span></h1>
+    <h1>You are in: <span id="chosenTableName"></span></h1>
     <button class="big-btn" onclick="startPreTimer()">Start Game</button>
   </div>
 
   <!-- Pre-timer -->
   <div id="preTimerScreen" class="hidden">
     <h2>Game will start in <span id="preTimer">1:59</span> min<br>Please sit</h2>
+    <p>3 or 4 people should sit here</p>
   </div>
 
   <!-- Game start message -->
