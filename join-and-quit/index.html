@@ -28,6 +28,15 @@
       align-items: center;
       justify-content: center;
     }
+    h1{
+      font-size: 5em;
+      font-weight: bold;
+      margin: 0;
+      text-align: center;
+    }
+    h2{
+      text-align: center;
+    }
     body.has-bg::before {
       content: "";
       position: fixed;
@@ -57,10 +66,9 @@
       color: #fff;
       cursor: pointer;
       width: 80%;
-      max-width: 400px;
       display: block;
-      margin-left: auto;
-      margin-right: auto;
+      text-align: center;
+      
       transition: border 0.2s, background 0.2s;
       box-shadow: 0 4px 16px rgba(0,0,0,0.2);
       font-weight: bold;
@@ -73,11 +81,11 @@
       background: rgba(0,0,0,0.5);
       outline: none;
     }
-    #timers { margin-top: 2em; }
-    .timer-label { font-size: 1.2em; margin: 0.5em 0; }
+    
+    
     .main-timer { font-size: 3em; margin: 0.5em 0; font-weight: bold; }
     .other-timers { font-size: 1.5em; margin: 0.5em 0; }
-    #gameStartMsg { font-size: 2em; color: #2ecc40; margin: 1em 0; text-shadow: 0 2px 8px #000; }
+    
     h1, h2, h3, .timer-label, .main-timer, .other-timers, #gameStartMsg, p {
       color: #fff;
       text-shadow: 0 2px 8px #000, 0 0px 2px #000;
@@ -117,7 +125,7 @@
 
   <!-- Table selection -->
   <div id="tableSelect">
-    <h1>Select your table</h1>
+    <h2>Select your table</h2>
     <button class="big-btn" onclick="chooseTable('village')">Village</button>
     <button class="big-btn" onclick="chooseTable('castle')">Castle</button>
     <button class="big-btn" onclick="chooseTable('forest')">Forest</button>
@@ -125,37 +133,54 @@
 
   <!-- Start button -->
   <div id="startScreen" class="hidden">
-    <h1>You are in: <span id="chosenTableName"></span></h1>
+    <h1><span id="chosenTableName"></span></h1>
     <button class="big-btn" onclick="startPreTimer()">Start Game</button>
   </div>
 
   <!-- Pre-timer -->
   <div id="preTimerScreen" class="hidden">
-    <h2>Game will start in <span id="preTimer">1:59</span> min<br>Please sit</h2>
-    <p>3 or 4 people should sit here</p>
+    <h2>Game will start in <span id="preTimer">1:59</span></h2>
+    <h2>3 or 4 people should sit here</h2>
   </div>
 
   <!-- Game start message -->
-  <div id="gameStartMsg" class="hidden">
+  <div style ="
+      font-size: 2em;
+      margin: 1em 0;
+      text-shadow: 0 2px 8px #000;"
+    id="gameStartMsg" class="hidden">
     Game Start!
   </div>
 
   <!-- Timers -->
-  <div id="timers" class="hidden">
-    <h2 id="tableName"></h2>
-    <div class="timer-label">Time left at this table:</div>
-    <div class="main-timer" id="mainTimer"></div>
-    <div class="timer-label">Other tables:</div>
-    <div class="other-timers" id="otherTimers"></div>
+  <div 
+  style="margin-top: 2em;"id="timers" class="hidden">
+    <h1 id="tableName"></h1>
+    <div style="text-align: center;"
+      class="main-timer" 
+      id="mainTimer">
+    </div>
+    <div style="
+        font-size: 1.2em;
+        margin: 0.5em 0;
+        text-align: 
+        center; 
+        margin-top: 10em;"
+      class="timer-label">Other tables:
+    </div>
+    <div style="text-align: center;" class="other-timers" id="otherTimers"></div>
   </div>
 
   <script>
     // Table timer durations in seconds
+    const BEFORE_DURATION = 6; //60
+    const GAME_DURATION = 0.5 * 60; //12*60
     const TABLES = {
-      village: { name: 'Village', duration: 10 * 60, bg: 'images/village.jpg' },
-      castle: { name: 'Castle', duration: 11 * 60, bg: 'images/castle.jpg' },
-      forest: { name: 'Forest', duration: 12 * 60, bg: 'images/forest.jpg' }
+      village: { name: 'Village', duration: GAME_DURATION - 120, bg: 'images/village.jpg' },
+      castle: { name: 'Castle', duration: GAME_DURATION - 60, bg: 'images/castle.jpg' },
+      forest: { name: 'Forest', duration: GAME_DURATION, bg: 'images/forest.jpg' }
     };
+
 
     let chosenTable = null;
     let startTime = null;
@@ -212,7 +237,7 @@
     function startPreTimer() {
       document.getElementById('startScreen').classList.add('hidden');
       document.getElementById('preTimerScreen').classList.remove('hidden');
-      let preTimeLeft = 119; // 1:59 in seconds
+      let preTimeLeft = BEFORE_DURATION;
 
       document.getElementById('preTimer').textContent = formatTime(preTimeLeft);
       preTimerInterval = setInterval(() => {
@@ -227,6 +252,8 @@
 
     // Start main game timers
     function startGameTimers() {
+      const startBell = new Audio('sounds/start_bell.mp3');
+      startBell.play();
       document.getElementById('preTimerScreen').classList.add('hidden');
       document.getElementById('gameStartMsg').classList.remove('hidden');
       setTimeout(() => {
