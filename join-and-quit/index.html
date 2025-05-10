@@ -85,6 +85,9 @@
     
     .main-timer { font-size: 3em; margin: 0.5em 0; font-weight: bold; }
     .other-timers { font-size: 1.5em; margin: 0.5em 0; }
+    .timer-ended {
+      color: red !important;
+    }
     
     h1, h2, h3, .timer-label, .main-timer, .other-timers, #gameStartMsg, p {
       color: #fff;
@@ -174,7 +177,7 @@
   <script>
     // Table timer durations in seconds
     const BEFORE_DURATION = 6; //60
-    const GAME_DURATION = 0.5 * 60; //12*60
+    const GAME_DURATION = 2.5 * 60; //12*60
     const TABLES = {
       village: { name: 'Village', duration: GAME_DURATION - 120, bg: 'images/village.jpg' },
       castle: { name: 'Castle', duration: GAME_DURATION - 60, bg: 'images/castle.jpg' },
@@ -266,7 +269,23 @@
       startTime = Date.now();
     }
 
-    // Run and update all timers
+    // Track which table sounds have been played
+    const tableSoundPlayed = {
+      village: false,
+      castle: false,
+      forest: false
+    };
+
+    function playTableEndSound(tableKey) {
+      const soundMap = {
+        village: 'sounds/village_end.mp3',
+        castle: 'sounds/castle_end.mp3',
+        forest: 'sounds/forest_end.mp3'
+      };
+      const audio = new Audio(soundMap[tableKey]);
+      audio.play();
+    }
+
     function runGameTimers() {
       document.getElementById('tableName').textContent = TABLES[chosenTable].name;
 
@@ -279,23 +298,56 @@
         const mainTimeLeft = Math.max(0, mainDuration - elapsed);
         document.getElementById('mainTimer').textContent = formatTime(mainTimeLeft);
 
-        // Other timers
-        let otherHTML = '';
-        for (const [key, table] of Object.entries(TABLES)) {
-          if (key !== chosenTable) {
-            const otherTimeLeft = Math.max(0, table.duration - elapsed);
-            otherHTML += `<div>${table.name}: ${formatTime(otherTimeLeft)}</div>`;
-          }
+        // Play sound if main table ends and hasn't played yet
+        if (mainTimeLeft === 0 && !tableSoundPlayed[chosenTable]) {
+          playTableEndSound(chosenTable);
+          tableSoundPlayed[chosenTable] = true;
+          document.getElementById('mainTimer').style.color = 'red';
         }
-        document.getElementById('otherTimers').innerHTML = otherHTML;
+
+        // Build the HTML for all other timers
+let otherHTML = '';
+for (const [key, table] of Object.entries(TABLES)) {
+  if (key !== chosenTable) {
+    const otherTimeLeft = Math.max(0, table.duration - elapsed);
+    otherHTML += `<div id="timer-${key}">${table.name}: ${formatTime(otherTimeLeft)}</div>`;
+
+    // Play sound if this table ends and hasn't played yet
+    if (otherTimeLeft === 0 && !tableSoundPlayed[key]) {
+      playTableEndSound(key);
+      tableSoundPlayed[key] = true;
+      // Don't try to add class here!
+    }
+  }
+}
+document.getElementById('otherTimers').innerHTML = otherHTML;
+
+// Now, update the classes for ended timers
+for (const [key, table] of Object.entries(TABLES)) {
+  if (key !== chosenTable) {
+    const otherTimeLeft = Math.max(0, table.duration - elapsed);
+    const timerDiv = document.getElementById(`timer-${key}`);
+    if (timerDiv) {
+      if (otherTimeLeft === 0) {
+        timerDiv.classList.add('timer-ended');
+      } else {
+        timerDiv.classList.remove('timer-ended');
+      }
+    }
+  }
+}
+
 
         // Stop updating when all timers are done
-        if (mainTimeLeft === 0 &&
-            Object.entries(TABLES).every(([key, t]) => (t.duration - elapsed) <= 0)) {
+        if (
+          mainTimeLeft === 0 &&
+          Object.entries(TABLES).every(([key, t]) => (t.duration - elapsed) <= 0)
+        ) {
           clearInterval(gameTimerInterval);
         }
       }, 500);
     }
+
 
     // Format seconds as M:SS
     function formatTime(secs) {
