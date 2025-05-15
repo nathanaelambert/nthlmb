@@ -64,21 +64,35 @@ function resizeCanvas() {
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
-function getOscillatingPoints(cx, cy, baseRadius, t) {
-  const pts = [];
-  for (let i = 0; i < numPoints; i++) {
-    const angle = (i / numPoints) * 2 * Math.PI;
-    const osc = Math.sin(t * speed + phases[i]);
-    const r = baseRadius * (1 + amplitudesArr[i] * osc);
-    pts.push({
-      x: cx + r * Math.cos(angle),
-      y: cy + r * Math.sin(angle),
-      angle: angle,
-      r: r
-    });
-  }
-  return pts;
+// Exponential random number generator (mean = 1/lambda)
+// Most values near 0, a few much larger
+function randomExponential(lambda = 3) {
+    // See [1][2][5]
+    return -Math.log(1 - Math.random()) / lambda;
 }
+  
+function getOscillatingPoints(cx, cy, baseRadius, t) {
+    const pts = [];
+    // Amplitude increases with agitation (from 0.01 to 0.12)
+    const maxAmplitude = lerp(0.01, 0.12, agitation);
+    const lambda = 3; // Higher lambda = more points near zero, a few large
+    for (let i = 0; i < numPoints; i++) {
+        const angle = (i / numPoints) * 2 * Math.PI;
+        const osc = Math.sin(t * speed + phases[i]);
+        // Exponential random, normalized to [0, 1)
+        const expRand = Math.min(randomExponential(lambda), 1);
+        const amp = expRand * maxAmplitude;
+        const r = baseRadius * (1 + amp * osc);
+        pts.push({
+        x: cx + r * Math.cos(angle),
+        y: cy + r * Math.sin(angle),
+        angle: angle,
+        r: r
+        });
+    }
+return pts;
+}
+  
 
 // Helper: get control point for Bézier curve, tangent to the circle at given point
 function getControlPoint(pt, angle, handleLen) {
