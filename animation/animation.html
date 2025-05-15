@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Oscillating Smooth Circle</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      min-height: 100vh;
+      min-width: 100vw;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f0f0f0;
+    }
+    canvas {
+      display: block;
+      background: white;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+<canvas id="wave"></canvas>
+<script>
+const canvas = document.getElementById('wave');
+const ctx = canvas.getContext('2d');
+
+// Responsive square canvas
+function resizeCanvas() {
+  const size = Math.min(window.innerWidth, window.innerHeight);
+  canvas.width = size;
+  canvas.height = size;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+const POINTS = 128;
+let phases = [];
+let amplitudes = [];
+for (let i = 0; i < POINTS; i++) {
+  phases[i] = Math.random() * Math.PI * 2;
+  amplitudes[i] = 0.06 + Math.random() * 0.14; // 6% to 20% of radius
+}
+
+function getOscillatingPoints(cx, cy, baseRadius, t) {
+  const pts = [];
+  for (let i = 0; i < POINTS; i++) {
+    const angle = (i / POINTS) * 2 * Math.PI;
+    const osc = Math.sin(t + phases[i]);
+    const r = baseRadius * (1 + amplitudes[i] * osc);
+    pts.push({
+      x: cx + r * Math.cos(angle),
+      y: cy + r * Math.sin(angle),
+      angle: angle,
+      r: r
+    });
+  }
+  return pts;
+}
+
+// Helper: get control point for Bézier curve, tangent to the circle at given point
+function getControlPoint(pt, angle, handleLen) {
+  // Tangent is perpendicular to radius
+  const tangentAngle = angle + Math.PI/2;
+  return {
+    x: pt.x + Math.cos(tangentAngle) * handleLen,
+    y: pt.y + Math.sin(tangentAngle) * handleLen
+  };
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const w = canvas.width;
+  const h = canvas.height;
+  const cx = w / 2;
+  const cy = h / 2;
+  const baseRadius = w * 0.5 * 0.5; // 50% of width, then half for radius
+
+  const t = performance.now() * 0.001;
+  const points = getOscillatingPoints(cx, cy, baseRadius, t);
+
+  // Handle length for smoothness: Kappa * radius (Kappa ≈ 0.5522847498 for a circle)
+  // But since our points oscillate, use local average radius for each segment
+  ctx.beginPath();
+  for (let i = 0; i < POINTS; i++) {
+    const curr = points[i];
+    const next = points[(i + 1) % POINTS];
+
+    // Average radius for handle length
+    const avgR = (curr.r + next.r) / 2;
+    const handleLen = avgR * 0.5522847498 * (2 * Math.PI / POINTS);
+
+    // Outgoing control point from curr (tangent to circle at curr)
+    const cp1 = getControlPoint(curr, curr.angle, handleLen);
+    // Incoming control point to next (tangent to circle at next, but reversed)
+    const cp2 = getControlPoint(next, next.angle, -handleLen);
+
+    if (i === 0) ctx.moveTo(curr.x, curr.y);
+    ctx.bezierCurveTo(cp1.x, cp1.y, cp2.x, cp2.y, next.x, next.y);
+  }
+  ctx.closePath();
+  ctx.strokeStyle = 'royalblue';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>
