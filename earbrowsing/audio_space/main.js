@@ -1,9 +1,9 @@
-// js/main.js
 import { TouchMovement } from './TouchMovement.js';
 import { LineOfSight } from './LineOfSight.js';
 import { Level } from './Level.js';
 import { GameLogic } from './GameLogic.js';
 import { items } from './items.js';
+import { GUI } from './GUI.js';
 
 function openFullscreen(elem) {
   if (elem.requestFullscreen) {
@@ -21,17 +21,15 @@ function fitElementToScreen(elem) {
   elem.style.left = '0';
   elem.style.width = '100vw';
   elem.style.height = '100vh';
-  elem.style.zIndex = '9999'; // Ensures it's on top
+  elem.style.zIndex = '9999';
   elem.style.margin = '0';
   elem.style.padding = '0';
-  elem.style.background = 'white'; // Optional: set background if needed
+  elem.style.background = 'white';
 }
-
 
 document.getElementById('line-btn').addEventListener('click', () => {
   const audioSpaceDiv = document.getElementById('audio-space');
   audioSpaceDiv.style.display = 'block';
-  // openFullscreen(audioSpaceDiv);
   fitElementToScreen(audioSpaceDiv);
   document.getElementById('container').style.display = 'none';
   const touchMovement = new TouchMovement(audioSpaceDiv);
@@ -43,28 +41,43 @@ document.getElementById('line-btn').addEventListener('click', () => {
 document.getElementById('wave-btn').addEventListener('click', () => {
   const audioSpaceDiv = document.getElementById('audio-space');
   audioSpaceDiv.style.display = 'block';
-  // openFullscreen(audioSpaceDiv);
   fitElementToScreen(audioSpaceDiv);
   document.getElementById('container').style.display = 'none';
 
-  // Create Level instance, passing in the div
-  const level = new Level(audioSpaceDiv, {});
+  // Setup instruction and search divs
+  const instructionDiv = document.getElementById('instruction');
+  const searchDiv = document.getElementById('search');
+  instructionDiv.style.display = 'none';
+  searchDiv.style.display = 'none';
+  instructionDiv.style.position = 'absolute';
+  instructionDiv.style.top = '0';
+  instructionDiv.style.left = '0';
+  instructionDiv.style.width = '100%';
+  instructionDiv.style.height = '100%';
+  searchDiv.style.position = 'absolute';
+  searchDiv.style.top = '0';
+  searchDiv.style.left = '0';
+  // Ensure searchDiv is visible and sized before creating Level
+  searchDiv.style.display = 'block';
+  searchDiv.style.width = '100%';
+  searchDiv.style.height = '100%';
+  searchDiv.offsetWidth; // force reflow
+
+  // Create Level instance, passing in the search div
+  const level = new Level(searchDiv, {});
 
   // Create GameLogic instance, using a level generator that returns the items for the level
   const gameLogic = new GameLogic(() => {
-    // Generate a new level and return its items for this round
     level.newLevel();
-    // Optionally, display the debug view
     level.show_level();
-    // Return just the items for the round (for GameLogic)
     return level.getLevel().map(obj => obj.item);
   });
 
-  // Start the game with 1 round and a simple end callback
-  gameLogic.start_game(1, (score) => {
-    alert(`Game ended! Score: ${score}`);
-  });
+  // Create GUI observer
+  const gui = new GUI(gameLogic, level, instructionDiv, searchDiv);
 
-  // Show the level in debug mode
-  level.show_level();
+  const rounds = 3;
+  gameLogic.start_game(rounds, (score) => {
+    alert(`Game ended! Score: ${score} out of ${rounds}`);
+  });
 });

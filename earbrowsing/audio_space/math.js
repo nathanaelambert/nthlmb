@@ -1,4 +1,3 @@
-// 2D Point class
 export class Point2D {
   constructor(x, y) {
     this.x = x;

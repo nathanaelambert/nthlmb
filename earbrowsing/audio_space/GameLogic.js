@@ -4,7 +4,7 @@ export class GameLogic extends Observable {
   constructor(levelGenerator) {
     super();
     this.levelGenerator = levelGenerator;
-    this.phase = 'idle'; // 'idle', 'instructions', 'search', 'ended'
+    this.phase = 'idle';
     this.currentRound = 0;
     this.totalRounds = 0;
     this.score = 0;
@@ -14,7 +14,6 @@ export class GameLogic extends Observable {
     this.guessedThisRound = false;
   }
 
-  // Private method to set phase and notify observers if changed
   _setPhase(newPhase) {
     if (this.phase !== newPhase) {
       this.phase = newPhase;
@@ -27,15 +26,15 @@ export class GameLogic extends Observable {
     this.currentRound = 0;
     this.score = 0;
     this.endedCallback = end;
+    this._prepareNextRound(); // Prepare level in background
     this._setPhase('instructions');
-    this._newRound();
   }
 
-  _newRound() {
+  _prepareNextRound() {
     this.items = this.levelGenerator();
     this.secretItem = this.items[Math.floor(Math.random() * this.items.length)];
     this.guessedThisRound = false;
-    this._setPhase('instructions');
+    // Do NOT set phase here!
   }
 
   instructions_clear() {
@@ -58,7 +57,8 @@ export class GameLogic extends Observable {
         this.endedCallback(this.score);
       }
     } else {
-      this._newRound();
+      this._prepareNextRound();
+      this._setPhase('instructions');
     }
     return correct;
   }
