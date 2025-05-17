@@ -1,7 +1,6 @@
-// js/AudioSpace.js
 import { Observable } from './Observable.js';
 
-export class AudioSpace extends Observable {
+export class TouchMovement extends Observable {
   constructor(container) {
     super();
     this.container = container;

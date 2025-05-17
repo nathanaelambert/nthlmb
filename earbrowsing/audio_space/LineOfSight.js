@@ -7,11 +7,11 @@ function lerpAngle(a, b, t) {
 }
   
 export class LineOfSight {
-  constructor(audioSpace) {
-    this.audioSpace = audioSpace;
-    this.display_x = audioSpace.finger_x;
-    this.display_y = audioSpace.finger_y;
-    this.display_direction = audioSpace.direction_facing;
+  constructor(touchMovement) {
+    this.touchMovement = touchMovement;
+    this.display_x = touchMovement.finger_x;
+    this.display_y = touchMovement.finger_y;
+    this.display_direction = touchMovement.direction_facing;
     this.target_x = this.display_x;
     this.target_y = this.display_y;
     this.target_direction = this.display_direction;
@@ -30,7 +30,7 @@ export class LineOfSight {
     this.display_y += (this.target_y - this.display_y) * ease;
     this.display_direction = lerpAngle(this.display_direction, this.target_direction, ease);
 
-    const { ctx, width, height } = this.audioSpace;
+    const { ctx, width, height } = this.touchMovement;
     ctx.clearRect(0, 0, width, height);
     ctx.strokeStyle = "#00FFAA";
     ctx.lineWidth = 4;
