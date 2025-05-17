@@ -12,7 +12,7 @@ export class Level {
     this.div.appendChild(this.canvas);
 
     // Parameters (with defaults)
-    this.numberOfItems = params.numberOfItems || 12;
+    this.numberOfItems = params.numberOfItems || 15;
     this.gridMargin = params.gridMargin || 20;
     this.rectMinSize = params.rectMinSize || 60;
     this.rectMaxSize = params.rectMaxSize || 120;
@@ -76,7 +76,7 @@ export class Level {
   // Helper to grow a rectangle in random directions
   _growRectangle(idx, cellW, cellH, maxW, maxH, margin) {
     const rect = this.rectangles[idx];
-    const directions = ['left', 'right', 'up', 'down'].sort(() => Math.random() - 0.5);
+    const directions = ['left', 'left', 'right', 'right', 'up', 'down'].sort(() => Math.random() - 0.5);
     for (const dir of directions) {
       let grown = true;
       while (grown) {

@@ -15,10 +15,24 @@ function openFullscreen(elem) {
   }
 }
 
+function fitElementToScreen(elem) {
+  elem.style.position = 'fixed';
+  elem.style.top = '0';
+  elem.style.left = '0';
+  elem.style.width = '100vw';
+  elem.style.height = '100vh';
+  elem.style.zIndex = '9999'; // Ensures it's on top
+  elem.style.margin = '0';
+  elem.style.padding = '0';
+  elem.style.background = 'white'; // Optional: set background if needed
+}
+
+
 document.getElementById('line-btn').addEventListener('click', () => {
   const audioSpaceDiv = document.getElementById('audio-space');
   audioSpaceDiv.style.display = 'block';
-  openFullscreen(audioSpaceDiv);
+  // openFullscreen(audioSpaceDiv);
+  fitElementToScreen(audioSpaceDiv);
   document.getElementById('container').style.display = 'none';
   const touchMovement = new TouchMovement(audioSpaceDiv);
   const lineOfSight = new LineOfSight(touchMovement);
@@ -29,15 +43,12 @@ document.getElementById('line-btn').addEventListener('click', () => {
 document.getElementById('wave-btn').addEventListener('click', () => {
   const audioSpaceDiv = document.getElementById('audio-space');
   audioSpaceDiv.style.display = 'block';
-  openFullscreen(audioSpaceDiv);
+  // openFullscreen(audioSpaceDiv);
+  fitElementToScreen(audioSpaceDiv);
   document.getElementById('container').style.display = 'none';
 
   // Create Level instance, passing in the div
-  const level = new Level(audioSpaceDiv, {
-    numberOfItems: 12, // or any other parameter you want
-    gridMargin: 20,
-    rectMinSize: 60
-  });
+  const level = new Level(audioSpaceDiv, {});
 
   // Create GameLogic instance, using a level generator that returns the items for the level
   const gameLogic = new GameLogic(() => {
