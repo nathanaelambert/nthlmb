@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Introduction Demo</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      box-sizing: border-box;
+      font-family: sans-serif;
+    }
+    #container {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #f0f0f0;
+    }
+    #audio-space {
+      display: none;
+      width: 100vw;
+      height: 100vh;
+      background: #222;
+      position: fixed;
+      top: 0; left: 0;
+      z-index: 100;
+      touch-action: none;
+    }
+    #demo-btn {
+      padding: 1em 2em;
+      font-size: 1.2em;
+      margin-top: 2em;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <h1>Introduction</h1>
+    <button id="demo-btn">Demo</button>
+  </div>
+  <div id="audio-space"></div>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
