@@ -4,6 +4,15 @@ export class Point2D {
     this.x = x;
     this.y = y;
   }
+  // Returns true if this point is inside the given rectangle (not on the edge)
+  isInside(rect) {
+    return (
+      this.x > rect.x1 &&
+      this.x < rect.x2 &&
+      this.y > rect.y1 &&
+      this.y < rect.y2
+    );
+  }
 }
   
 // Rectangle class defined by four coordinates
