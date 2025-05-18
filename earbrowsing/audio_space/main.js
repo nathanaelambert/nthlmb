@@ -1,3 +1,4 @@
+import { AudioPlayer } from './AudioPlayer.js'; // Import your AudioPlayer class
 import { TouchMovement } from './TouchMovement.js';
 import { LineOfSight } from './LineOfSight.js';
 import { Level } from './Level.js';
@@ -27,11 +28,42 @@ function fitElementToScreen(elem) {
   elem.style.background = 'white';
 }
 
+// --- AUDIO PLAYER SETUP ---
+const audioSpaceDiv = document.getElementById('audio-space');
+const instructionDiv = document.getElementById('instruction');
+const searchDiv = document.getElementById('search');
+
+// Create the AudioPlayer instance
+const audioPlayer = new AudioPlayer(audioSpaceDiv);
+
+// Helper to sync audioSpaceDiv size with instructionDiv and searchDiv
+function syncAudioSpaceSize() {
+  // Use the largest of the two (in case one is hidden)
+  const refDiv = instructionDiv.offsetWidth > 0 ? instructionDiv : searchDiv;
+  audioSpaceDiv.style.width = refDiv.offsetWidth + 'px';
+  audioSpaceDiv.style.height = refDiv.offsetHeight + 'px';
+  audioSpaceDiv.style.left = refDiv.offsetLeft + 'px';
+  audioSpaceDiv.style.top = refDiv.offsetTop + 'px';
+  audioSpaceDiv.style.position = 'absolute'; // match overlay style
+}
+
+// Listen for resize events to keep audioSpaceDiv in sync
+window.addEventListener('resize', syncAudioSpaceSize);
+window.addEventListener('orientationchange', syncAudioSpaceSize);
+
+// Optionally, observe mutations if instruction/searchDiv size can change dynamically
+const resizeObserver = new ResizeObserver(syncAudioSpaceSize);
+resizeObserver.observe(instructionDiv);
+resizeObserver.observe(searchDiv);
+
+// --- BUTTON EVENTS ---
 document.getElementById('line-btn').addEventListener('click', () => {
-  const audioSpaceDiv = document.getElementById('audio-space');
   audioSpaceDiv.style.display = 'block';
   fitElementToScreen(audioSpaceDiv);
   document.getElementById('container').style.display = 'none';
+
+  syncAudioSpaceSize();
+
   const touchMovement = new TouchMovement(audioSpaceDiv);
   const lineOfSight = new LineOfSight(touchMovement);
   touchMovement.addObserver(lineOfSight);
@@ -39,14 +71,11 @@ document.getElementById('line-btn').addEventListener('click', () => {
 });
 
 document.getElementById('wave-btn').addEventListener('click', () => {
-  const audioSpaceDiv = document.getElementById('audio-space');
   audioSpaceDiv.style.display = 'block';
   fitElementToScreen(audioSpaceDiv);
   document.getElementById('container').style.display = 'none';
 
   // Setup instruction and search divs
-  const instructionDiv = document.getElementById('instruction');
-  const searchDiv = document.getElementById('search');
   instructionDiv.style.display = 'none';
   searchDiv.style.display = 'none';
   instructionDiv.style.position = 'absolute';
@@ -57,11 +86,12 @@ document.getElementById('wave-btn').addEventListener('click', () => {
   searchDiv.style.position = 'absolute';
   searchDiv.style.top = '0';
   searchDiv.style.left = '0';
-  // Ensure searchDiv is visible and sized before creating Level
   searchDiv.style.display = 'block';
   searchDiv.style.width = '100%';
   searchDiv.style.height = '100%';
   searchDiv.offsetWidth; // force reflow
+
+  syncAudioSpaceSize();
 
   // Create Level instance, passing in the search div
   const level = new Level(searchDiv, {});
@@ -73,8 +103,8 @@ document.getElementById('wave-btn').addEventListener('click', () => {
     return level.getLevel().map(obj => obj.item);
   });
 
-  // Create GUI observer
-  const gui = new GUI(gameLogic, level, instructionDiv, searchDiv);
+  // Pass audioPlayer to GUI
+  const gui = new GUI(gameLogic, level, instructionDiv, searchDiv, audioPlayer);
 
   const rounds = 3;
   gameLogic.start_game(rounds, (score) => {
