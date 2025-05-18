@@ -32,6 +32,8 @@ export class GUI {
     this.playersLoaded = new Promise((resolve) => {
       this.players = new Tone.Players(this.soundMap, () => {
         console.log('All sounds loaded!');
+        const overlay = document.getElementById('loadingOverlay');
+        if (overlay) overlay.style.display = 'none';
         resolve();
       }).toDestination();
     });
