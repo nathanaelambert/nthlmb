@@ -43,6 +43,7 @@ export class GUI {
     this.listenerPosition = {x: canvas.width / 2, y: canvas.height / 2, z: 0};
     this.gameLogic.addObserver(this);
     this.panners = {};
+    this.currentRectKey = null;
 
     // Build the sound map and preload all sounds
     this.soundMap = buildSoundMap(items);
@@ -175,7 +176,30 @@ export class GUI {
   _onTouchDrag(finger_x, finger_y) {
     this._setListenerPosition(finger_x, finger_y, 0);
     this._drawSoundAndListenerMarkers();
+  
+    // Check if the listener is inside any rectangle
+    const elements = this.level.getLevel();
+    let insideKey = null;
+    for (const e of elements) {
+      const { x1, y1, x2, y2 } = e.rectangle;
+      if (
+        finger_x >= x1 && finger_x <= x2 &&
+        finger_y >= y1 && finger_y <= y2
+      ) {
+        insideKey = `${e.item.type}:${e.item.content}`;
+        break;
+      }
+    }
+  
+    // If the rectangle has changed, vibrate!
+    if (insideKey !== this.currentRectKey) {
+      if (this.currentRectKey !== null && insideKey !== null && window.navigator.vibrate) {
+        window.navigator.vibrate(50); // Vibrate for 50ms
+      }
+      this.currentRectKey = insideKey;
+    }
   }
+  
 
   // On canvas resize: restart sounds and reset listener to center
   onCanvasResize() {
