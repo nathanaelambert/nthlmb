@@ -6,8 +6,9 @@ export class Level {
     // The div is the container for the canvas and gives width/height
     this.div = div;
     this.canvas = document.createElement('canvas');
-    this.canvas.width = div.clientWidth;
-    this.canvas.height = div.clientHeight;
+    this.canvas.width = div.clientWidth || window.innerWidth;
+    this.canvas.height = div.clientHeight || window.innerHeight;
+
     this.ctx = this.canvas.getContext('2d');
     this.div.appendChild(this.canvas);
 
@@ -55,6 +56,11 @@ export class Level {
     // Shuffle and pick as many as needed
     possibleCells = possibleCells.sort(() => Math.random() - 0.5)
                                  .slice(0, this.levelItems.length);
+    // After generating possibleCells
+    if (possibleCells.length < this.levelItems.length) {
+        throw new Error("Not enough grid cells for items. Make the container bigger or reduce numberOfItems.");
+    }
+  
 
     // 4. Place rectangles at grid positions
     this.rectangles = [];
