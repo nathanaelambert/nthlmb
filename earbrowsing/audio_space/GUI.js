@@ -25,6 +25,7 @@ export class GUI {
     this._loadToken = 0;
     this.listenerPosition = {x: canvas.width / 2, y: canvas.height / 2, z: 0};
     this.gameLogic.addObserver(this);
+    this.panners = {};
 
     // Build the sound map and preload all sounds
     this.soundMap = buildSoundMap(items);
@@ -92,7 +93,7 @@ export class GUI {
           distanceModel: 'exponential',
           maxDistance: 50,  // smaller value for testing
           refDistance: 5,
-          rolloffFactor: 0.5
+          rolloffFactor: 1.5
         }).toDestination();
         this.panners[key] = panner;
         
@@ -103,7 +104,6 @@ export class GUI {
         console.log(`Started sound (panner at listener): ${key}`);
       }
       
-    this._setListenerPosition(this.canvas.width / 2, this.canvas.height / 2, 0);
     this._drawSoundAndListenerMarkers();
   }
 
@@ -138,9 +138,9 @@ export class GUI {
 
   // Set the Tone.js listener position
   _setListenerPosition(x, y, z) {
-    Tone.Listener.positionX.value = x;
-    Tone.Listener.positionY.value = y;
-    Tone.Listener.positionZ.value = z;
+    Tone.Listener.positionX.value = x*0.066;
+    Tone.Listener.positionY.value = y*0.066;
+    Tone.Listener.positionZ.value = z=0;
     this.listenerPosition = {x, y, z};
     this._updatePannerPositions();
   }
