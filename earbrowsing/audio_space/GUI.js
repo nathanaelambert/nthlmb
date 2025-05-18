@@ -12,6 +12,20 @@ function buildSoundMap(items) {
     // Use a composite key for easy lookup
     map[`${item.type}:${item.content}`] = path;
   }
+  // Add instruction sounds
+  const instructionContents = [
+    'double tap to activate',
+    'find the button',
+    'find the text',
+    'use a single tap on the screen to scan from that area'
+  ];
+
+  for (const keyContent of instructionContents) {
+    const encodedContent = encodeURIComponent(instructionContent);
+    const path = `./sounds/instructions/${encodedContent}.mp3`;
+    map[`instruction:${keyContent}`] = path;
+  }
+
   return map;
 }
 
