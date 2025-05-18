@@ -16,6 +16,7 @@ function buildSoundMap(items) {
 }
 
 const REF_DISTANCE = 5;
+const ROLL_OFF = 1.5;
 
 
 export class GUI {
@@ -96,7 +97,7 @@ export class GUI {
           distanceModel: 'exponential',
           maxDistance: 50,  // smaller value for testing
           refDistance: REF_DISTANCE,
-          rolloffFactor: 1.5
+          rolloffFactor: ROLL_OFF
         }).toDestination();
         this.panners[key] = panner;
         
