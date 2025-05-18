@@ -5,53 +5,24 @@
   <title>Introduction Demo</title>
   <script src="https://unpkg.com/tone"></script>
   <style>
-    body, html {
+    html, body {
       margin: 0;
       padding: 0;
+      overflow: hidden;
       height: 100%;
       width: 100%;
-      box-sizing: border-box;
-      font-family: sans-serif;
     }
-    #container {
-      width: 100vw;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: #f0f0f0;
-    }
-    #audio-space {
-      display: none;
-      width: 100vw;
-      height: 100vh;
-      background: #222;
-      position: fixed;
-      top: 0; left: 0;
-      z-index: 100;
-      touch-action: none;
-    }
-    h1{
-      font-size: 4em;
-    }
-    button {
-      padding: 2em 4em;
-      font-size: 2em;
-      margin-top: 4em;
+    canvas {
+      display: block;
+      height: 100%;
+      width: 100%;
     }
   </style>
+  
 </head>
 <body>
-  <div id="container">
-    <h1>Introduction</h1>
-    <button id="line-btn">Demo Line</button>
-    <button id="wave-btn">Demo Wave</button>
-  </div>
-  <div id="audio-space" style="display:none;">
-    <div id="instruction" style="display:none;"></div>
-    <div id="search" style="display:none;"></div>
-  </div>
+  <canvas id="soundCanvas" style="background-color: black;"></canvas>
+
   <script type="module" src="audio_space/main.js"></script>
 </body>
 </html>

@@ -2,27 +2,86 @@ import { items } from './items.js';
 import { Rectangle, Point2D } from './math.js';
 
 export class Level {
-  constructor(div, params = {}) {
-    // The div is the container for the canvas and gives width/height
-    this.div = div;
-    this.canvas = document.createElement('canvas');
-    this.canvas.width = div.clientWidth;
-    this.canvas.height = div.clientHeight;
-    this.ctx = this.canvas.getContext('2d');
-    this.div.appendChild(this.canvas);
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d');
 
     // Parameters (with defaults)
-    this.numberOfItems = params.numberOfItems || 15;
-    this.gridMargin = params.gridMargin || 20;
-    this.rectMinSize = params.rectMinSize || 60;
-    this.rectMaxSize = params.rectMaxSize || 120;
+    this.numberOfItems = 15;
+    this.gridMargin = 20;
+    this.rectMinSize = 60;
+    this.rectMaxSize = 120;
 
     this.levelItems = [];
     this.rectangles = [];
+
+    // Observe canvas resizing and regenerate level
+    this._observeCanvasResize();
+  }
+
+  // Observe canvas resizing using ResizeObserver
+  _observeCanvasResize() {
+    // Fallback for browsers that don't support ResizeObserver
+    if (typeof ResizeObserver !== "undefined") {
+      this.resizeObserver = new ResizeObserver(() => {
+        this._onCanvasResize();
+      });
+      this.resizeObserver.observe(this.canvas);
+    } else {
+      // Fallback: listen to window resize
+      window.addEventListener('resize', () => this._onCanvasResize());
+    }
+  }
+
+  _onCanvasResize() {
+    // Optionally, set canvas size to match its display size
+    this.canvas.width = this.canvas.clientWidth;
+    this.canvas.height = this.canvas.clientHeight;
+    // Regenerate the level if the canvas is big enough
+    if (this._isCanvasBigEnough()) {
+      this.newLevel();
+      this.show_level();
+    } else {
+      this._showTooSmallMessage();
+    }
+  }
+
+  // Check if canvas is big enough for the level
+  _isCanvasBigEnough() {
+    const w = this.canvas.width;
+    const h = this.canvas.height;
+    const margin = this.gridMargin;
+    const cellW = this.rectMinSize + margin;
+    const cellH = this.rectMinSize + margin;
+    const cols = Math.floor(w / cellW);
+    const rows = Math.floor(h / cellH);
+
+    // Need at least enough cells for the number of items
+    const possibleCells = Math.floor((cols - 2) / 2) * Math.floor((rows - 2) / 2);
+    return possibleCells >= this.numberOfItems;
+  }
+
+  // Show a message if the canvas is too small
+  _showTooSmallMessage() {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.fillStyle = "#c00";
+    this.ctx.font = "24px sans-serif";
+    this.ctx.textAlign = "center";
+    this.ctx.fillText(
+      "Canvas too small for this level!",
+      this.canvas.width / 2,
+      this.canvas.height / 2
+    );
   }
 
   // Generate a new level
   newLevel() {
+    // Check if canvas is big enough
+    if (!this._isCanvasBigEnough()) {
+      this._showTooSmallMessage();
+      return;
+    }
+
     // Clear previous
     this.levelItems = [];
     this.rectangles = [];
