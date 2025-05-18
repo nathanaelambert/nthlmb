@@ -21,7 +21,7 @@ function buildSoundMap(items) {
   ];
 
   for (const keyContent of instructionContents) {
-    const encodedContent = encodeURIComponent(instructionContent);
+    const encodedContent = encodeURIComponent(keyContent);
     const path = `./sounds/instructions/${encodedContent}.mp3`;
     map[`instruction:${keyContent}`] = path;
   }
