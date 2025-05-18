@@ -1,236 +1,283 @@
-import { Point2D, closestPointOnRectangle, sliceInTwo } from './math.js';
+import { Point2D } from './math.js';
+import { items } from './items.js';
 
-const SPEED_CONSTANT = 0.003; // Adjustable
-const DOUBLE_TAP_DELAY = 300; // ms
+function buildSoundMap(items) {
+  const map = {};
+  for (const item of items) {
+    // Encode for file path
+    const type = encodeURIComponent(item.type.trim());
+    const content = encodeURIComponent(item.content.trim());
+    // e.g. ./sounds/buttons/about.mp3 or ./sounds/texts/add%20to%20cart.mp3
+    const path = `./sounds/${type}s/${content}.mp3`;
+    // Use a composite key for easy lookup
+    map[`${item.type}:${item.content}`] = path;
+  }
+  return map;
+}
+
 
 export class GUI {
-  constructor(gameLogic, level, instructionDiv, searchDiv, audioPlayer) {
+  constructor(gameLogic, level, canvas) {
     this.gameLogic = gameLogic;
     this.level = level;
-    this.instructionDiv = instructionDiv;
-    this.searchDiv = searchDiv;
-    this.searchCanvas = document.createElement('canvas');
-    this.searchCanvas.style.position = 'absolute';
-    this.searchCanvas.style.top = '0';
-    this.searchCanvas.style.left = '0';
-    this.searchCanvas.style.pointerEvents = 'none';
-    this.searchCanvas.style.zIndex = 10;
-    this.searchDiv.appendChild(this.searchCanvas);
-
-    this.audioPlayer = audioPlayer;
-
-    this._lastTapInstruction = 0;
-    this._lastTapSearch = 0;
-    this._searchTapTimeout = null;
-    this._doubleTapHappened = false; // NEW: flag to block single tap after double tap
-
+    this.canvas = canvas;
+    this._setupCanvasEvents();
+    this._loadToken = 0;
+    this.listenerPosition = {x: canvas.width / 2, y: canvas.height / 2, z: 0};
     this.gameLogic.addObserver(this);
+    this.panners = {};
 
-    this.instructionDiv.addEventListener('touchend', (e) => this._handleInstructionDoubleTap(e));
-    this.searchDiv.addEventListener('touchend', (e) => this._handleSearchTouchEnd(e));
+    // Build the sound map and preload all sounds
+    this.soundMap = buildSoundMap(items);
+    this.playersLoaded = new Promise((resolve) => {
+      this.players = new Tone.Players(this.soundMap, () => {
+        console.log('All sounds loaded!');
+        resolve();
+      }).toDestination();
+    });
+    
+
+    // Optionally, handle canvas resize
+    window.addEventListener('resize', () => this.onCanvasResize());
   }
 
   update({ phase }) {
-    this.instructionDiv.style.display = 'none';
-    this.searchDiv.style.display = 'none';
-
     if (phase === 'instructions') {
-      this._showInstruction();
+      // Stop sounds if needed
+      this._stop_sounds();
     } else if (phase === 'search') {
-      this._showSearch();
+      // Could start sounds here if desired
     }
   }
 
-  _showInstruction() {
-    const secret = this.gameLogic.getSecretItem();
-    this.instructionDiv.textContent = `Find the item: ${secret.content}`;
-    this.instructionDiv.style.display = 'flex';
-    this.instructionDiv.style.justifyContent = 'center';
-    this.instructionDiv.style.alignItems = 'center';
-    this.instructionDiv.style.fontSize = '2em';
+  // Start and loop 3D sounds for each element
+  async _start_sounds() {
+    await this.playersLoaded;
+    this._stop_sounds();
+    this.panners = {};
+
+    // Set listener position at canvas center (z=0)
+    
+    const elements = this.level.getLevel();
+    
+    for (const e of elements) {
+      if (!e.item || typeof e.item.type !== 'string' || typeof e.item.content !== 'string' ||
+        !e.item.type.trim() || !e.item.content.trim()) {
+          console.error('Skipped invalid item:', e.item);
+          continue;
+        }
+
+        // Composite key for lookup
+        const key = `${e.item.type}:${e.item.content}`;
+        const player = this.players.player(key);
+        
+        if (!player.buffer.loaded) {
+          console.warn(`Sound not loaded for: ${key}`);
+          continue;
+        }
+        
+        const x = (e.rectangle.x1 + e.rectangle.x2) / 2;
+        const y = (e.rectangle.y1 + e.rectangle.y2) / 2;
+        const z = (e.rectangle.x2 - e.rectangle.x1) * (e.rectangle.y2 - e.rectangle.y1);
+        const dx = x - this.listenerPosition.x;
+        const dy = y - this.listenerPosition.y;
+        const dz = z - this.listenerPosition.z;
+        const distance = Math.sqrt(dx*dx + dy*dy + dz*dz);
+        console.log(`Distance from listener to sound: ${distance}`);
+        const panner = new Tone.Panner3D({
+          positionX: x * 0.066,
+          positionY: y * 0.066,
+          positionZ: 0,
+          panningModel: 'HRTF',
+          distanceModel: 'exponential',
+          maxDistance: 50,  // smaller value for testing
+          refDistance: 5,
+          rolloffFactor: 1.5
+        }).toDestination();
+        this.panners[key] = panner;
+        
+        player.disconnect();
+        player.connect(panner);
+        player.loop = true;
+        player.start();
+        console.log(`Started sound (panner at listener): ${key}`);
+      }
+      
+    this._drawSoundAndListenerMarkers();
   }
 
-  _showSearch() {
-    this.searchDiv.style.display = 'block';
-    this._resizeCanvas();
-  }
-  _resizeCanvas() {
-    this.searchCanvas.width = this.searchDiv.offsetWidth;
-    this.searchCanvas.height = this.searchDiv.offsetHeight;
-  }
-  
-
-  _handleInstructionDoubleTap(e) {
-    const now = Date.now();
-    if (now - this._lastTapInstruction < DOUBLE_TAP_DELAY) {
-      if (this.gameLogic.getPhase() === 'instructions') {
-        this.gameLogic.instructions_clear();
+  _updatePannerPositions() {
+    const elements = this.level.getLevel();
+    for (const e of elements) {
+      const key = `${e.item.type}:${e.item.content}`;
+      const panner = this.panners[key];
+      if (panner) {
+        // Use the current rectangle center, mapped to meters
+        const x = ((e.rectangle.x1 + e.rectangle.x2) / 2) * 0.066;
+        const y = ((e.rectangle.y1 + e.rectangle.y2) / 2) * 0.066;
+        const z = 0;
+        panner.setPosition(x, y, z);
+      } else {
+        // Optional: log missing panners for debugging
+        console.warn(`No panner found for key: ${key}`);
       }
     }
-    this._lastTapInstruction = now;
+  }
+  
+  
+
+  // Stop all sounds
+  _stop_sounds() {
+    // Stop all currently playing sounds
+    this.players._players.forEach((player) => {
+      try { player.stop(); } catch {}
+    });
   }
 
-  _handleSearchTouchEnd(e) {
-    if (e.changedTouches && e.changedTouches.length > 1) return;
-    if (this._searchTapTimeout) {
-      clearTimeout(this._searchTapTimeout);
-      this._searchTapTimeout = null;
-      this._doubleTapHappened = true; // Set flag
-      this._handleSearchDoubleTap(e);
-    } else {
-      this._doubleTapHappened = false; // Reset flag for new tap sequence
-      this._searchTapTimeout = setTimeout(() => {
-        this._searchTapTimeout = null;
-        this._handleSearchSingleTap(e);
-      }, DOUBLE_TAP_DELAY);
-    }
+
+  // Set the Tone.js listener position
+  _setListenerPosition(x, y, z) {
+    Tone.Listener.positionX.value = x*0.066;
+    Tone.Listener.positionY.value = y*0.066;
+    Tone.Listener.positionZ.value = z=0;
+    this.listenerPosition = {x, y, z};
+    this._updatePannerPositions();
   }
 
-  _handleSearchDoubleTap(e) {
-    // Always stop all audios
-    this.audioPlayer.stop_all();
+  // Double tap: start sounds and set listener to tap position
+  _onDoubleTap(finger_x, finger_y) {
+    console.log('tap tap')
+    this._start_sounds();
+    this._setListenerPosition(finger_x, finger_y, 0);
+    this._drawSoundAndListenerMarkers();
+  }
 
-    if (this.gameLogic.getPhase() !== 'search') return;
-    const touch = e.changedTouches[0];
-    const rect = this.searchDiv.getBoundingClientRect();
-    const x = (touch.clientX - rect.left) * (this.searchDiv.width ? this.searchDiv.width / rect.width : 1);
-    const y = (touch.clientY - rect.top) * (this.searchDiv.height ? this.searchDiv.height / rect.height : 1);
-    const point = new Point2D(x, y);
+  // Drag: move listener to follow finger
+  _onTouchDrag(finger_x, finger_y) {
+    this._setListenerPosition(finger_x, finger_y, 0);
+    this._drawSoundAndListenerMarkers();
+  }
 
-    const items = this.level.getLevel();
-    for (const obj of items) {
-      if (point.isInside(obj.rectangle)) {
-        this.gameLogic.guess(obj.item);
-        break;
+  // On canvas resize: restart sounds and reset listener to center
+  onCanvasResize() {
+    this._start_sounds();
+    this._setListenerPosition(this.canvas.width / 2, this.canvas.height / 2, 0);
+    this._drawSoundAndListenerMarkers();
+  }
+  _setupCanvasEvents() {
+    // Double tap detection
+    let lastTapTime = 0;
+    let lastTapX = 0;
+    let lastTapY = 0;
+  
+    this.canvas.addEventListener('touchstart', async (e) => {
+      if (e.touches.length === 1) {
+        const touch = e.touches[0];
+        const rect = this.canvas.getBoundingClientRect();
+        const x = touch.clientX - rect.left;
+        const y = touch.clientY - rect.top;
+        const now = Date.now();
+    
+        if (now - lastTapTime < 300) {
+          // Double tap detected
+          await Tone.start(); // Ensure AudioContext is running
+          this._onDoubleTap(x, y);
+          lastTapTime = 0; // reset
+        } else {
+          lastTapTime = now;
+          lastTapX = x;
+          lastTapY = y;
+        }
       }
-    }
-  }
+    });
+    
+    // Mouse double click for desktop
+    this.canvas.addEventListener('dblclick', async (e) => {
+      const rect = this.canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      await Tone.start(); // Ensure AudioContext is running
+      this._onDoubleTap(x, y);
+    });
+    
+  
+    // Touch drag
+    this.canvas.addEventListener('touchmove', (e) => {
 
-  async _handleSearchSingleTap(e) {
-    // If a double tap just happened, abort this single tap handler
-    if (this._doubleTapHappened) return;
-
-    if (this.gameLogic.getPhase() !== 'search') return;
-    const touch = e.changedTouches ? e.changedTouches[0] : e;
-    const rect = this.searchDiv.getBoundingClientRect();
-    const tap_x = (touch.clientX - rect.left) * (this.searchDiv.width ? this.searchDiv.width / rect.width : 1);
-    const tap_y = (touch.clientY - rect.top) * (this.searchDiv.height ? this.searchDiv.height / rect.height : 1);
-    const target = new Point2D(tap_x, tap_y);
-
-    this.audioPlayer.stop_all();
-    this.audioPlayer.place_listener(tap_x, tap_y);
-
-    const items = this.level.getLevel();
-    for (const { item, rectangle } of items) {
-      // If a double tap happened during the async loop, abort early
-      if (this._doubleTapHappened) return;
-
-      const closest = closestPointOnRectangle(rectangle, target);
-      let distance = target.distanceTo(closest);
-      if (target.isInside(rectangle)) distance = 0;
-      const [path1, path2] = sliceInTwo(rectangle, target);
-
-      // Start visualization
-      this._animateCircle({
-        tap: target,
-        closest,
-        paths: [path1, path2],
-        rect: rectangle,
-        distance,
-        speed: SPEED_CONSTANT
-      });
-
-      const time_start = distance * SPEED_CONSTANT;
-      if (rectangle.x2 - rectangle.x1 <= 0 || rectangle.y2 - rectangle.y1 <= 0) {
-        console.warn('Degenerate rectangle found');
-        continue;
+      if (e.touches.length === 1) {
+        const touch = e.touches[0];
+        const rect = this.canvas.getBoundingClientRect();
+        const x = touch.clientX - rect.left;
+        const y = touch.clientY - rect.top;
+        this._onTouchDrag(x, y);
       }
-
-      const height = rectangle.area();
-      const audioPath = `../sounds/${item.type}s/${item.content}.mp3`;
-
-      this.audioPlayer.schedule_audio(audioPath, time_start, path1, height);
-      this.audioPlayer.schedule_audio(audioPath, time_start, path2, height);
-    }
-  }
-
-  _drawVisualization({tap, closest, paths, rect, startTime, maxRadius}) {
-    const ctx = this.searchCanvas.getContext('2d');
-    ctx.clearRect(0, 0, this.searchCanvas.width, this.searchCanvas.height);
+    });
   
-    // Draw rectangle
-    ctx.strokeStyle = '#888';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.rect(rect.x1, rect.y1, rect.x2 - rect.x1, rect.y2 - rect.y1);
-    ctx.stroke();
+    let isMouseDown = false;
   
-    // Draw growing circle
-    if (maxRadius > 0) {
-      ctx.beginPath();
-      ctx.arc(tap.x, tap.y, maxRadius, 0, 2 * Math.PI);
-      ctx.strokeStyle = 'rgba(0,128,255,0.5)';
-      ctx.lineWidth = 3;
-      ctx.stroke();
-    }
-  
-    // Draw closest point
-    ctx.beginPath();
-    ctx.arc(closest.x, closest.y, 6, 0, 2 * Math.PI);
-    ctx.fillStyle = 'red';
-    ctx.fill();
-  
-    // Draw paths
-    const colors = ['#2ecc40', '#ff4136'];
-    paths.forEach((path, idx) => {
-      ctx.beginPath();
-      ctx.moveTo(path.points[0].x, path.points[0].y);
-      for (let pt of path.points.slice(1)) {
-        ctx.lineTo(pt.x, pt.y);
-      }
-      ctx.strokeStyle = colors[idx];
-      ctx.lineWidth = 4;
-      ctx.stroke();
-  
-      // Mark corners and end point
-      for (let i = 0; i < path.points.length; i++) {
-        ctx.beginPath();
-        ctx.arc(path.points[i].x, path.points[i].y, i === path.points.length-1 ? 7 : 5, 0, 2 * Math.PI);
-        ctx.fillStyle = i === path.points.length-1 ? colors[idx] : '#fff';
-        ctx.strokeStyle = colors[idx];
-        ctx.lineWidth = 2;
-        ctx.fill();
-        ctx.stroke();
+    this.canvas.addEventListener('mousedown', (e) => {
+      isMouseDown = true;
+    });
+    this.canvas.addEventListener('mouseup', (e) => {
+      isMouseDown = false;
+    });
+    this.canvas.addEventListener('mousemove', (e) => {
+      if (isMouseDown) {
+        const rect = this.canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        this._onTouchDrag(x, y);
       }
     });
   }
 
-  _animateCircle({tap, closest, paths, rect, distance, speed}) {
-    const startTime = performance.now();
-    const duration = distance / speed * 1000; // ms
-    const maxRadius = distance;
+  _drawSoundAndListenerMarkers() {
+    const ctx = this.canvas.getContext('2d');
+    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.level.show_level()
   
-    const animate = (now) => {
-      const elapsed = now - startTime;
-      let currentRadius = Math.min(maxRadius, (elapsed / duration) * maxRadius);
+    // Draw sound sources (red)
+    const elements = this.level.getLevel();
+    for (const e of elements) {
+      // Use the center of the rectangle for the sound source
+      const x = (e.rectangle.x1 + e.rectangle.x2) / 2;
+      const y = (e.rectangle.y1 + e.rectangle.y2) / 2;
+      ctx.beginPath();
+      ctx.arc(x, y, 18, 0, 2 * Math.PI);
+      ctx.fillStyle = 'rgba(255,0,0,0.6)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(128,0,0,0.7)';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+    }
   
-      this._drawVisualization({
-        tap,
-        closest,
-        paths,
-        rect,
-        startTime,
-        maxRadius: currentRadius
-      });
-  
-      if (currentRadius < maxRadius) {
-        this._visualizationFrame = requestAnimationFrame(animate);
-      }
-    };
-  
-    if (this._visualizationFrame) cancelAnimationFrame(this._visualizationFrame);
-    this._visualizationFrame = requestAnimationFrame(animate);
+    // Draw listener (green)
+    const lx = this.listenerPosition.x;
+    const ly = this.listenerPosition.y;
+    ctx.beginPath();
+    ctx.arc(lx, ly, 18, 0, 2 * Math.PI);
+    ctx.fillStyle = 'rgba(0,200,0,0.6)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(0,100,0,0.7)';
+    ctx.lineWidth = 3;
+    ctx.stroke();
   }
   
   
 }
+
+  // _showInstruction() {
+  //   const secret = this.gameLogic.getSecretItem().content;
+  //   this.instructionDiv.textContent = `Find the item: ${secret}`;
+  //   this.instructionDiv.style.display = 'flex';
+  //   this.instructionDiv.style.justifyContent = 'center';
+  //   this.instructionDiv.style.alignItems = 'center';
+  //   this.instructionDiv.style.fontSize = '2em';
+  // }
+
+  // _showSearch() {
+  //   this.searchDiv.style.display = 'block';
+  //   // Level rendering is handled elsewhere
+  // }
+
+
