@@ -54,7 +54,7 @@ export const items = [
   { type: "text", content: "learn more about our services" },
   { type: "text", content: "loading, please wait" },
   { type: "text", content: "new updates are available" },
-  { type: "text", content: "password must be ath least 8 characters" },
+  { type: "text", content: "password must be at least 8 characters" },
   { type: "text", content: "payment succesful" },
   { type: "text", content: "please fill out all required fields" },
   { type: "text", content: "privacy policy updated" },
