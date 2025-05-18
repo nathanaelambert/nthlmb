@@ -194,6 +194,7 @@ export class GUI {
     // If the rectangle has changed, vibrate!
     if (insideKey !== this.currentRectKey) {
       if (this.currentRectKey !== null && insideKey !== null && window.navigator.vibrate) {
+        console.log('switch rectangle')
         window.navigator.vibrate(50); // Vibrate for 50ms
       }
       this.currentRectKey = insideKey;
