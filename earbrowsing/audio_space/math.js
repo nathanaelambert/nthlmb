@@ -135,13 +135,14 @@ export function sliceInTwo(rect, target) {
   function findEdgeAndPosition(point) {
     const { x, y } = point;
     const { x1, y1, x2, y2 } = rect;
-    // Edges: 0=top, 1=right, 2=bottom, 3=left
-    if (y === y1 && x >= x1 && x <= x2) return { edge: 0, t: (x - x1) }; // top
-    if (x === x2 && y >= y1 && y <= y2) return { edge: 1, t: (y - y1) }; // right
-    if (y === y2 && x <= x2 && x >= x1) return { edge: 2, t: (x2 - x) }; // bottom
-    if (x === x1 && y <= y2 && y >= y1) return { edge: 3, t: (y2 - y) }; // left
+    const EPS = 1e-6;
+    if (Math.abs(y - y1) < EPS && x >= x1 - EPS && x <= x2 + EPS) return { edge: 0, t: (x - x1) }; // top
+    if (Math.abs(x - x2) < EPS && y >= y1 - EPS && y <= y2 + EPS) return { edge: 1, t: (y - y1) }; // right
+    if (Math.abs(y - y2) < EPS && x <= x2 + EPS && x >= x1 - EPS) return { edge: 2, t: (x2 - x) }; // bottom
+    if (Math.abs(x - x1) < EPS && y <= y2 + EPS && y >= y1 - EPS) return { edge: 3, t: (y2 - y) }; // left
     throw new Error('Start point is not on the rectangle edge');
   }
+  
 
   // Get edge lengths in order: top, right, bottom, left
   const edgeLens = [
@@ -166,7 +167,12 @@ export function sliceInTwo(rect, target) {
 
     while (remaining > 0) {
       let edgeLen = edgeLens[edge];
-      let advance = direction === 1 ? edgeLen - offset : offset;
+      let advance = Math.max(0, direction === 1 ? edgeLen - offset : offset);
+      console.log('edgeLen:', edgeLen);
+      console.log('offset:', offset);
+      console.log('remaining:', remaining)
+      console.log('advance:', advance)
+
       if (advance >= remaining) {
         // Final segment lands within this edge
         let ratio = remaining / edgeLen;
