@@ -15,6 +15,8 @@ function buildSoundMap(items) {
   return map;
 }
 
+const REF_DISTANCE = 5;
+
 
 export class GUI {
   constructor(gameLogic, level, canvas) {
@@ -93,7 +95,7 @@ export class GUI {
           panningModel: 'HRTF',
           distanceModel: 'exponential',
           maxDistance: 50,  // smaller value for testing
-          refDistance: 5,
+          refDistance: REF_DISTANCE,
           rolloffFactor: 1.5
         }).toDestination();
         this.panners[key] = panner;
@@ -245,7 +247,7 @@ export class GUI {
       const x = (e.rectangle.x1 + e.rectangle.x2) / 2;
       const y = (e.rectangle.y1 + e.rectangle.y2) / 2;
       ctx.beginPath();
-      ctx.arc(x, y, 18, 0, 2 * Math.PI);
+      ctx.arc(x, y, 10, 0, 2 * Math.PI);
       ctx.fillStyle = 'rgba(255,0,0,0.6)';
       ctx.fill();
       ctx.strokeStyle = 'rgba(128,0,0,0.7)';
@@ -257,7 +259,7 @@ export class GUI {
     const lx = this.listenerPosition.x;
     const ly = this.listenerPosition.y;
     ctx.beginPath();
-    ctx.arc(lx, ly, 18, 0, 2 * Math.PI);
+    ctx.arc(lx, ly,REF_DISTANCE/0.066, 0, 2 * Math.PI);
     ctx.fillStyle = 'rgba(0,200,0,0.6)';
     ctx.fill();
     ctx.strokeStyle = 'rgba(0,100,0,0.7)';
