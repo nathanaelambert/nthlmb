@@ -51,6 +51,7 @@ export class GUI {
       this.players = new Tone.Players(this.soundMap, () => {
         console.log('All sounds loaded!');
         const overlay = document.getElementById('loadingOverlay');
+        this.gameLogic.assets_loaded();
         if (overlay) overlay.style.display = 'none';
         resolve();
       }).toDestination();
@@ -71,7 +72,7 @@ export class GUI {
   }
 
   // Start and loop 3D sounds for each element
-  async _start_sounds() {
+  async start_sounds() {
     await this.playersLoaded;
     this._stop_sounds();
     this.panners = {};
@@ -126,6 +127,66 @@ export class GUI {
     this._drawSoundAndListenerMarkers();
   }
 
+  play_instructions() {
+    return this.playersLoaded.then(() => {
+      // Get the secret item
+      const secret = this.gameLogic.getSecretItem();
+      if (!secret || !secret.item) {
+        console.warn('No secret item found for instructions.');
+        return;
+      }
+  
+      // Determine which instruction sound to play
+      let instructionKey;
+      if (secret.item.type === 'button') {
+        instructionKey = 'instruction:find the button';
+      } else if (secret.item.type === 'text') {
+        instructionKey = 'instruction:find the text';
+      } else {
+        console.warn('Unknown secret item type:', secret.item.type);
+        return;
+      }
+  
+      // Key for the content sound
+      const contentKey = `instruction:${secret.item.content}`;
+  
+      // Play both sounds sequentially (instruction, then content)
+      return new Promise((resolve) => {
+        // Play instruction sound
+        const instructionPlayer = this.players.player(instructionKey);
+        if (!instructionPlayer.buffer.loaded) {
+          console.warn('Instruction sound not loaded:', instructionKey);
+          resolve();
+          return;
+        }
+        instructionPlayer.disconnect();
+        instructionPlayer.connect(Tone.Destination);
+  
+        // When the instruction sound ends, play the content sound
+        instructionPlayer.once('stop', () => {
+          const contentPlayer = this.players.player(contentKey);
+          if (!contentPlayer.buffer.loaded) {
+            console.warn('Content instruction sound not loaded:', contentKey);
+            resolve();
+            return;
+          }
+          contentPlayer.disconnect();
+          contentPlayer.connect(Tone.Destination);
+  
+          contentPlayer.once('stop', () => {
+            resolve();
+          });
+  
+          contentPlayer.start();
+        });
+  
+        instructionPlayer.start();
+      });
+    });
+  }
+  
+  
+
   _updatePannerPositions() {
     const elements = this.level.getLevel();
     for (const e of elements) {
@@ -142,8 +203,7 @@ export class GUI {
         console.warn(`No panner found for key: ${key}`);
       }
     }
-  }
-  
+  } 
   
 
   // Stop all sounds
@@ -167,9 +227,14 @@ export class GUI {
   // Double tap: start sounds and set listener to tap position
   _onDoubleTap(finger_x, finger_y) {
     console.log('tap tap')
-    this._start_sounds();
-    this._setListenerPosition(finger_x, finger_y, 0);
-    this._drawSoundAndListenerMarkers();
+    const elements = this.level.getLevel();
+    const finger = Point2D(finger_x, finger_y);
+    for (const e of elements) {
+      
+      if (finger.isInside(e.rectangle)) {
+        this.gameLogic.guess(e.item)
+      }
+    }
   }
 
   // Drag: move listener to follow finger
@@ -204,9 +269,11 @@ export class GUI {
 
   // On canvas resize: restart sounds and reset listener to center
   onCanvasResize() {
-    this._start_sounds();
+    if (this.gameLogic.getPhase() === "search"){
+      this.start_sounds();
     this._setListenerPosition(this.canvas.width / 2, this.canvas.height / 2, 0);
     this._drawSoundAndListenerMarkers();
+    }
   }
   _setupCanvasEvents() {
     // Double tap detection

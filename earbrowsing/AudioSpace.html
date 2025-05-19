@@ -19,22 +19,26 @@
       touch-action: none;
 
     }
-    #loadingOverlay {
+    .overlay {
       position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.85);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2em;
-    z-index: 1000;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.85);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2em;
+      z-index: 1000;
     }
   </style>
   
 </head>
 <body>
-  <div id="loadingOverlay" style>
+  
+  <div id="instructionsOverlay" class="overlay">
+    Listen and double tap on the described element.
+  </div>
+  <div id="loadingOverlay" class="overlay">
     Loading sounds, please wait...
   </div>
   <canvas id="soundCanvas" style="background-color: black;"></canvas>

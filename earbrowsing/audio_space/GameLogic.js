@@ -17,6 +17,7 @@ export class GameLogic extends Observable {
   _setPhase(newPhase) {
     if (this.phase !== newPhase) {
       this.phase = newPhase;
+      console.log(this.phase);
       this.notify({ phase: this.phase });
     }
   }
@@ -27,7 +28,7 @@ export class GameLogic extends Observable {
     this.score = 0;
     this.endedCallback = end;
     this._prepareNextRound(); // Prepare level in background
-    this._setPhase('instructions');
+    this._setPhase('ready');
   }
 
   _prepareNextRound() {
@@ -36,6 +37,13 @@ export class GameLogic extends Observable {
     this.guessedThisRound = false;
     // Do NOT set phase here!
   }
+
+  assets_loaded(){
+    if (this.phase !== 'ready') return;
+    this._setPhase('instructions');
+  }
+  
+
 
   instructions_clear() {
     if (this.phase !== 'instructions') return;
