@@ -2,12 +2,13 @@ import { items } from './items.js';
 import { Rectangle, Point2D } from './math.js';
 
 export class Level {
-  constructor(canvas) {
+  constructor(canvas, gamelogic) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
+    this.gameLogic = gamelogic;
+    this.gameLogic.addObserver(this);
 
     // Parameters (with defaults)
-    this.numberOfItems = 15;
     this.gridMargin = 20;
     this.rectMinSize = 60;
     this.rectMaxSize = 120;
@@ -17,6 +18,13 @@ export class Level {
 
     // Observe canvas resizing and regenerate level
     this._observeCanvasResize();
+  }
+
+  update(data){
+    if(data.phase === 'level'){
+      this.newLevel();
+      this.gameLogic.levelGenerated();
+    }
   }
 
   // Observe canvas resizing using ResizeObserver
@@ -58,7 +66,7 @@ export class Level {
 
     // Need at least enough cells for the number of items
     const possibleCells = Math.floor((cols - 2) / 2) * Math.floor((rows - 2) / 2);
-    return possibleCells >= this.numberOfItems;
+    return possibleCells >= this.gameLogic.getNumberOfItems();
   }
 
   // Show a message if the canvas is too small
@@ -76,6 +84,8 @@ export class Level {
 
   // Generate a new level
   newLevel() {
+    if (!['ready', 'instructions', 'search'].includes(this.gameLogic.getPhase())) return;
+
     // Check if canvas is big enough
     if (!this._isCanvasBigEnough()) {
       this._showTooSmallMessage();
@@ -86,10 +96,9 @@ export class Level {
     this.levelItems = [];
     this.rectangles = [];
 
-    // 1. Sample random items
-    const shuffled = items.slice().sort(() => Math.random() - 0.5);
-    this.levelItems = shuffled.slice(0, this.numberOfItems);
-
+    // 1. Sample random itemsconst shuffled = items.slice().sort(() => Math.random() - 0.5);
+    this.levelItems = this.gameLogic.getLevelItems();
+    
     // 2. Compute grid
     const w = this.canvas.width;
     const h = this.canvas.height;

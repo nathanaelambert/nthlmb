@@ -67,6 +67,7 @@ export class GUI {
       // Stop sounds if needed
       this._stop_sounds();
     } else if (phase === 'search') {
+      this.start_sounds();
       // Could start sounds here if desired
     }
   }
@@ -127,28 +128,29 @@ export class GUI {
     this._drawSoundAndListenerMarkers();
   }
 
-  play_instructions() {
+  async play_instructions() {
+    await Tone.start();
     return this.playersLoaded.then(() => {
       // Get the secret item
       const secret = this.gameLogic.getSecretItem();
-      if (!secret || !secret.item) {
+      if (!secret) {
         console.warn('No secret item found for instructions.');
         return;
       }
   
       // Determine which instruction sound to play
       let instructionKey;
-      if (secret.item.type === 'button') {
+      if (secret.type === 'button') {
         instructionKey = 'instruction:find the button';
-      } else if (secret.item.type === 'text') {
+      } else if (secret.type === 'text') {
         instructionKey = 'instruction:find the text';
       } else {
-        console.warn('Unknown secret item type:', secret.item.type);
+        console.warn('Unknown secret type:', secret.type);
         return;
       }
   
       // Key for the content sound
-      const contentKey = `instruction:${secret.item.content}`;
+      const contentKey = `${secret.type}:${secret.content}`;
   
       // Play both sounds sequentially (instruction, then content)
       return new Promise((resolve) => {
@@ -162,8 +164,8 @@ export class GUI {
         instructionPlayer.disconnect();
         instructionPlayer.connect(Tone.Destination);
   
-        // When the instruction sound ends, play the content sound
-        instructionPlayer.once('stop', () => {
+        // Set up the onstop handler
+        instructionPlayer.onstop = () => {
           const contentPlayer = this.players.player(contentKey);
           if (!contentPlayer.buffer.loaded) {
             console.warn('Content instruction sound not loaded:', contentKey);
@@ -173,12 +175,13 @@ export class GUI {
           contentPlayer.disconnect();
           contentPlayer.connect(Tone.Destination);
   
-          contentPlayer.once('stop', () => {
+          // Set up the onstop handler for the content player
+          contentPlayer.onstop = () => {
             resolve();
-          });
+          };
   
           contentPlayer.start();
-        });
+        };
   
         instructionPlayer.start();
       });
@@ -186,8 +189,9 @@ export class GUI {
   }
   
   
+  
 
-  _updatePannerPositions() {
+  _updatePannerPositions() {      
     const elements = this.level.getLevel();
     for (const e of elements) {
       const key = `${e.item.type}:${e.item.content}`;
@@ -228,7 +232,7 @@ export class GUI {
   _onDoubleTap(finger_x, finger_y) {
     console.log('tap tap')
     const elements = this.level.getLevel();
-    const finger = Point2D(finger_x, finger_y);
+    const finger = new Point2D(finger_x, finger_y);
     for (const e of elements) {
       
       if (finger.isInside(e.rectangle)) {

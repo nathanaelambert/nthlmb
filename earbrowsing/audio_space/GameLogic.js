@@ -1,17 +1,19 @@
 import { Observable } from './Observable.js';
+import { items } from './items.js';
 
 export class GameLogic extends Observable {
-  constructor(levelGenerator) {
+  constructor() {
     super();
-    this.levelGenerator = levelGenerator;
     this.phase = 'idle';
     this.currentRound = 0;
     this.totalRounds = 0;
     this.score = 0;
     this.secretItem = null;
-    this.items = [];
+    this.levelItems = [];
     this.endedCallback = null;
     this.guessedThisRound = false;
+    this.numberOfItems = 15;
+    this.sounds_loaded = false;
   }
 
   _setPhase(newPhase) {
@@ -27,22 +29,24 @@ export class GameLogic extends Observable {
     this.currentRound = 0;
     this.score = 0;
     this.endedCallback = end;
-    this._prepareNextRound(); // Prepare level in background
-    this._setPhase('ready');
+    this._prepareNextRound();
   }
 
   _prepareNextRound() {
-    this.items = this.levelGenerator();
-    this.secretItem = this.items[Math.floor(Math.random() * this.items.length)];
+    const shuffled = items.slice().sort(() => Math.random() - 0.5);
+    this.levelItems = shuffled.slice(0, this.numberOfItems);
+    this.secretItem = this.levelItems[Math.floor(Math.random() * this.levelItems.length)];
     this.guessedThisRound = false;
-    // Do NOT set phase here!
+    this._setPhase('ready');
   }
 
   assets_loaded(){
-    if (this.phase !== 'ready') return;
-    this._setPhase('instructions');
+    this.sounds_loaded = true;
   }
   
+  levelGenerated() {
+    if (this.phase === 'level') this._setPhase('instructions');
+  }
 
 
   instructions_clear() {
@@ -79,6 +83,14 @@ export class GameLogic extends Observable {
   getRound() {
     return this.currentRound + 1; // 1-based for UI
   }
+  
+  getLevelItems() {
+    return this.levelItems;
+  }
+
+  getNumberOfItems() {
+    return this.numberOfItems;
+  }
 
   getTotalRounds() {
     return this.totalRounds;
@@ -90,10 +102,6 @@ export class GameLogic extends Observable {
 
   getSecretItem() {
     return this.secretItem;
-  }
-
-  getItems() {
-    return this.items;
   }
 }
 

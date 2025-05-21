@@ -5,15 +5,17 @@ export class Instructions {
     this.gameLogic.addObserver(this);
   }
    
-  async update(phase) {
-    if (phase === "instructions") {
-      this.overlayDiv.style.display = 'block';
+  async update(data) {
+    if (data.phase === "instructions") {
+      const overlay = document.getElementById('instructionsOverlay');
+      if (overlay) overlay.style.display = 'block';
       await this.gui.play_instructions(); // Wait for instructions to finish
-      console.log('instructions');
+      console.log('You heard that ?');
       this.gameLogic.instructions_clear(); // Now call when instructions have done playing
     } 
-    if (phase === "search") {
-      this.overlayDiv.style.display = 'none';
+    if (data.phase === "search") {
+      const overlay = document.getElementById('instructionsOverlay');
+      if (overlay) overlay.style.display = 'none';
     } 
   }  
 }

@@ -9,13 +9,9 @@ import { Instructions } from './Instructions.js';
 
 const soundCanvas = document.getElementById('soundCanvas');
 
-const level = new Level(soundCanvas);
+const gameLogic = new GameLogic();
 
-const gameLogic = new GameLogic(() => {
-  level.newLevel();
-  level.show_level();
-  return level.getLevel().map(obj => obj.item);
-});
+const level = new Level(soundCanvas, gameLogic);
 
 const gui = new GUI(gameLogic, level, soundCanvas);
 
