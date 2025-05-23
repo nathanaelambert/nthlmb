@@ -235,6 +235,7 @@ export class GUI {
         finger_y >= y1 && finger_y <= y2
       ) {
         insideKey = `${e.item.type}:${e.item.content}`;
+        console.log(e.item.content);
         break;
       }
     }
