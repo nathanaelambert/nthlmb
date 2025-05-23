@@ -185,12 +185,13 @@ export class GUI {
       const panner = this.panners[key];
       const closest = closestPointInRectangle(e.rectangle, finger);
       const isInside = finger.isInside(e.rectangle);
+      const inStrip = (Math.abs(closest.y - finger_y) < MAX_VERTICAL_DISTANCE);
 
       if (panner) {
         // Use the current rectangle center, mapped to meters
         const x = closest.x * 0.066;
-        const y = closest.y * 0.066;
-        const z = isInside ? 2 : -2;
+        const y = (closest.y * 0.066);
+        const z = inStrip ? 1 : -100;
 
         panner.setPosition(x, y, z);
       } else {
@@ -356,9 +357,10 @@ export class GUI {
       const panner = this.panners[key];
       const x = panner.positionX.value * 15;
       const y = panner.positionY.value * 15;
+      const color = (panner.positionZ.value > 0) ? 'rgba(0, 4, 255, 0.6)' :'rgba(255,0,0,0.6)';
       ctx.beginPath();
       ctx.arc(x, y, 10, 0, 2 * Math.PI);
-      ctx.fillStyle = 'rgba(255,0,0,0.6)';
+      ctx.fillStyle = color;
       ctx.fill();
       ctx.strokeStyle = 'rgba(128,0,0,0.7)';
       ctx.lineWidth = 3;
