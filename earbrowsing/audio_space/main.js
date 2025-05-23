@@ -18,7 +18,7 @@ start_button.onclick = () => {
   gameLogic.buttonStarted();
   start_button.style.display = 'none';
   if (isMobileDevice()) {
-    requestFullscreen(document.body);
+    requestFullscreen(soundCanvas);
   }
 };
 
