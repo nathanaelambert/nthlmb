@@ -29,7 +29,7 @@ function buildSoundMap(items) {
   return map;
 }
 
-const REF_DISTANCE = 5;
+const REF_DISTANCE = 1;
 const ROLL_OFF = 1.5;
 
 
