@@ -1,4 +1,4 @@
-import { Point2D } from './math.js';
+import { Point2D, closestPointInRectangle } from './math.js';
 import { items } from './items.js';
 
 function buildSoundMap(items) {
@@ -170,15 +170,18 @@ export class GUI {
   
   
 
-  _updatePannerPositions() {      
+  _updatePannerPositions(finger_x, finger_y, finger_z) {      
     const elements = this.level.getLevel();
+    const finger = new Point2D(finger_x, finger_y);
+
     for (const e of elements) {
       const key = `${e.item.type}:${e.item.content}`;
       const panner = this.panners[key];
+      const closest = closestPointInRectangle(e.rectangle, finger);
       if (panner) {
         // Use the current rectangle center, mapped to meters
-        const x = ((e.rectangle.x1 + e.rectangle.x2) / 2) * 0.066;
-        const y = ((e.rectangle.y1 + e.rectangle.y2) / 2) * 0.066;
+        const x = closest.x * 0.066;
+        const y = closest.y * 0.066;
         const z = 0;
         panner.setPosition(x, y, z);
       } else {
@@ -204,7 +207,7 @@ export class GUI {
     Tone.Listener.positionY.value = y*0.066;
     Tone.Listener.positionZ.value = z=0;
     this.listenerPosition = {x, y, z};
-    this._updatePannerPositions();
+    this._updatePannerPositions(x,y,z);
   }
 
   // Double tap: start sounds and set listener to tap position
@@ -335,8 +338,10 @@ export class GUI {
     const elements = this.level.getLevel();
     for (const e of elements) {
       // Use the center of the rectangle for the sound source
-      const x = (e.rectangle.x1 + e.rectangle.x2) / 2;
-      const y = (e.rectangle.y1 + e.rectangle.y2) / 2;
+      const key = `${e.item.type}:${e.item.content}`;
+      const panner = this.panners[key];
+      const x = panner.positionX.value * 15;
+      const y = panner.positionY.value * 15;
       ctx.beginPath();
       ctx.arc(x, y, 10, 0, 2 * Math.PI);
       ctx.fillStyle = 'rgba(255,0,0,0.6)';

@@ -82,6 +82,12 @@ function clamp(val, min, max) {
   return Math.max(min, Math.min(max, val));
 }
 
+export function closestPointInRectangle(rect, target) {
+  let x = clamp(target.x, rect.x1, rect.x2);
+  let y = clamp(target.y, rect.y1, rect.y2);
+  return new Point2D(x, y);
+}
+
 // Returns the closest point on the rectangle's surface to the target point
 export function closestPointOnRectangle(rect, target) {
   // Clamp the target point to the rectangle bounds
