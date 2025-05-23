@@ -33,7 +33,7 @@ function buildSoundMap(items) {
 }
 
 const REF_DISTANCE = 1;
-const ROLL_OFF = 1.5;
+const ROLL_OFF = 2.5;
 const MAX_VERTICAL_DISTANCE = 200;
 
 
@@ -120,7 +120,7 @@ export class GUI {
           positionY: y * 0.066,
           positionZ: 0,
           panningModel: 'HRTF',
-          distanceModel: 'exponential',
+          distanceModel: 'inverse',
           maxDistance: 50,  // smaller value for testing
           refDistance: REF_DISTANCE,
           rolloffFactor: ROLL_OFF
@@ -191,7 +191,8 @@ export class GUI {
         // Use the current rectangle center, mapped to meters
         const x = closest.x * 0.066;
         const y = (closest.y * 0.066);
-        const z = inStrip ? 1 : -100;
+        const z1 = inStrip ? 10 : -100;
+        const z = isInside ? 1 : z1;
 
         panner.setPosition(x, y, z);
       } else {
@@ -215,7 +216,7 @@ export class GUI {
   _setListenerPosition(x, y, z) {
     Tone.Listener.positionX.value = x*0.066;
     Tone.Listener.positionY.value = y*0.066;
-    Tone.Listener.positionZ.value = z=0;
+    Tone.Listener.positionZ.value = z=3;
     this.listenerPosition = {x, y, z};
     this._updatePannerPositions(x,y,z);
   }
