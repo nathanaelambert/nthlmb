@@ -47,6 +47,7 @@ export class GUI {
     this.gameLogic.addObserver(this);
     this.panners = {};
     this.currentRectKey = null;
+    
 
     // Build the sound map and preload all sounds
     this.soundMap = buildSoundMap(items);
