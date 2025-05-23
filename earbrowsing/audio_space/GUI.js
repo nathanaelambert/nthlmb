@@ -62,20 +62,27 @@ export class GUI {
     window.addEventListener('resize', () => this.onCanvasResize());
   }
 
+  reset(){
+    this.panners = {};
+    this.currentRectKey = null;
+  }
+
   update({ phase }) {
     if (phase === 'instructions') {
       // Stop sounds if needed
-      this._stop_sounds();
+      this.stop_sounds();
     } else if (phase === 'search') {
       this.start_sounds();
       // Could start sounds here if desired
+    } else if (phase === 'new game') {
+      this.stop_sounds();
     }
   }
 
   // Start and loop 3D sounds for each element
   async start_sounds() {
     await this.playersLoaded;
-    this._stop_sounds();
+    this.stop_sounds();
     this.panners = {};
 
     // Set listener position at canvas center (z=0)
@@ -105,7 +112,7 @@ export class GUI {
         const dy = y - this.listenerPosition.y;
         const dz = z - this.listenerPosition.z;
         const distance = Math.sqrt(dx*dx + dy*dy + dz*dz);
-        console.log(`Distance from listener to sound: ${distance}`);
+        // console.log(`Distance from listener to sound: ${distance}`);
         const panner = new Tone.Panner3D({
           positionX: x * 0.066,
           positionY: y * 0.066,
@@ -122,71 +129,43 @@ export class GUI {
         player.connect(panner);
         player.loop = true;
         player.start();
-        console.log(`Started sound (panner at listener): ${key}`);
+        // console.log(`Started sound (panner at listener): ${key}`);
       }
       
     this._drawSoundAndListenerMarkers();
   }
 
+
+
+
   async play_instructions() {
     await Tone.start();
-    return this.playersLoaded.then(() => {
-      // Get the secret item
-      const secret = this.gameLogic.getSecretItem();
-      if (!secret) {
-        console.warn('No secret item found for instructions.');
-        return;
-      }
+    this.stop_sounds();
   
-      // Determine which instruction sound to play
-      let instructionKey;
-      if (secret.type === 'button') {
-        instructionKey = 'instruction:find the button';
-      } else if (secret.type === 'text') {
-        instructionKey = 'instruction:find the text';
-      } else {
-        console.warn('Unknown secret type:', secret.type);
-        return;
-      }
+    const secret = this.gameLogic.getSecretItem();
+    const player1 = this.players.player(`instruction:find the ${secret.type}`);
+    const player2 = new Tone.Player( `./sounds/${secret.type}s/${secret.content}.mp3`).toDestination();
   
-      // Key for the content sound
-      const contentKey = `${secret.type}:${secret.content}`;
+    const duration1 = player1.buffer.duration;
+    const duration2 = player2.buffer.duration;
   
-      // Play both sounds sequentially (instruction, then content)
-      return new Promise((resolve) => {
-        // Play instruction sound
-        const instructionPlayer = this.players.player(instructionKey);
-        if (!instructionPlayer.buffer.loaded) {
-          console.warn('Instruction sound not loaded:', instructionKey);
-          resolve();
-          return;
-        }
-        instructionPlayer.disconnect();
-        instructionPlayer.connect(Tone.Destination);
+    player1.start(0);
+    Tone.loaded().then(() => {
+      player2.start(0);
+    });
+   
+    
+    Tone.Transport.start();
   
-        // Set up the onstop handler
-        instructionPlayer.onstop = () => {
-          const contentPlayer = this.players.player(contentKey);
-          if (!contentPlayer.buffer.loaded) {
-            console.warn('Content instruction sound not loaded:', contentKey);
-            resolve();
-            return;
-          }
-          contentPlayer.disconnect();
-          contentPlayer.connect(Tone.Destination);
-  
-          // Set up the onstop handler for the content player
-          contentPlayer.onstop = () => {
-            resolve();
-          };
-  
-          contentPlayer.start();
-        };
-  
-        instructionPlayer.start();
-      });
+    // Wait until both sounds have finished playing
+    await new Promise(resolve => {
+      setTimeout(() => {
+        Tone.Transport.stop(); // Optional: stop transport after playback
+        resolve();
+      }, (duration1 + duration2) * 1000); // Convert seconds to ms
     });
   }
+  
   
   
   
@@ -211,7 +190,7 @@ export class GUI {
   
 
   // Stop all sounds
-  _stop_sounds() {
+  stop_sounds() {
     // Stop all currently playing sounds
     this.players._players.forEach((player) => {
       try { player.stop(); } catch {}

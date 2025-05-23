@@ -10,7 +10,7 @@ export class Instructions {
       const overlay = document.getElementById('instructionsOverlay');
       if (overlay) overlay.style.display = 'block';
       await this.gui.play_instructions(); // Wait for instructions to finish
-      console.log('You heard that ?');
+      // console.log('You heard that ?');
       this.gameLogic.instructions_clear(); // Now call when instructions have done playing
     } 
     if (data.phase === "search") {

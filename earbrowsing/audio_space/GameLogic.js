@@ -14,6 +14,8 @@ export class GameLogic extends Observable {
     this.guessedThisRound = false;
     this.numberOfItems = 15;
     this.sounds_loaded = false;
+    this.audio_activated = false;
+    this.level_readdy = false;
   }
 
   _setPhase(newPhase) {
@@ -21,6 +23,8 @@ export class GameLogic extends Observable {
       this.phase = newPhase;
       console.log(this.phase);
       this.notify({ phase: this.phase });
+    } else {
+      console.warn(`double call set phase ${newPhase}`);
     }
   }
 
@@ -37,15 +41,32 @@ export class GameLogic extends Observable {
     this.levelItems = shuffled.slice(0, this.numberOfItems);
     this.secretItem = this.levelItems[Math.floor(Math.random() * this.levelItems.length)];
     this.guessedThisRound = false;
-    this._setPhase('ready');
+    if (this.sounds_loaded){
+      this._setPhase('level');
+    } else {
+      this._setPhase('loading');
+    }
   }
 
   assets_loaded(){
+    if (this.phase !== 'loading') {
+      console.warn(`assets loaded in state ${this.phase}`);
+    }
     this.sounds_loaded = true;
+    this._setPhase('level');
+
   }
   
   levelGenerated() {
-    if (this.phase === 'level') this._setPhase('instructions');
+    if (this.phase != 'level') {
+      console.warn('level generated outside level phase');
+    }
+    this.level_readdy = true;
+    if (this.sounds_loaded) {
+      this._setPhase('instructions');
+    } else {
+      console.warn('level generated with no audio');
+    }
   }
 
 
@@ -67,10 +88,13 @@ export class GameLogic extends Observable {
       this._setPhase('ended');
       if (typeof this.endedCallback === 'function') {
         this.endedCallback(this.score);
+        this._setPhase('new game');
+        this.currentRound = 0;
+        this.score = 0;
+        this._prepareNextRound();
       }
     } else {
       this._prepareNextRound();
-      this._setPhase('instructions');
     }
     return correct;
   }

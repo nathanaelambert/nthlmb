@@ -23,7 +23,12 @@ export class Level {
   update(data){
     if(data.phase === 'level'){
       this.newLevel();
+      this.show_level();
       this.gameLogic.levelGenerated();
+    }
+
+    if (data.phase === 'search') {
+      this.show_level();
     }
   }
 
@@ -84,7 +89,7 @@ export class Level {
 
   // Generate a new level
   newLevel() {
-    if (!['ready', 'instructions', 'search'].includes(this.gameLogic.getPhase())) return;
+    if (!['level'].includes(this.gameLogic.getPhase())) return;
 
     // Check if canvas is big enough
     if (!this._isCanvasBigEnough()) {
