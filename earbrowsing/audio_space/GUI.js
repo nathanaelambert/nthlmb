@@ -34,7 +34,7 @@ function buildSoundMap(items) {
 
 const REF_DISTANCE = 1;
 const ROLL_OFF = 2.5;
-const MAX_VERTICAL_DISTANCE = 200;
+const MAX_VERTICAL_DISTANCE = 50;
 
 
 export class GUI {
@@ -55,16 +55,25 @@ export class GUI {
     this.playersLoaded = new Promise((resolve) => {
       this.players = new Tone.Players(this.soundMap, () => {
         console.log('All sounds loaded!');
-        const overlay = document.getElementById('loadingOverlay');
         this.gameLogic.assets_loaded();
-        if (overlay) overlay.style.display = 'none';
+        if (gameLogic.getButtonStarted()) {
+          this._hide_intro();
+        }
         resolve();
       }).toDestination();
     });
+
+
+    
     
 
     // Optionally, handle canvas resize
     window.addEventListener('resize', () => this.onCanvasResize());
+  }
+
+  _hide_intro() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) overlay.style.display = 'none';
   }
 
 
@@ -73,6 +82,8 @@ export class GUI {
     if (phase === 'instructions') {
       // Stop sounds if needed
       this.stop_sounds();
+      this._hide_intro();
+     
     } else if (phase === 'search') {
       this.start_sounds();
       // Could start sounds here if desired
