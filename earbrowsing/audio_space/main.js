@@ -7,9 +7,17 @@ import { items } from './items.js';
 import { GUI } from './GUI.js';
 import { Instructions } from './Instructions.js';
 
+
 const soundCanvas = document.getElementById('soundCanvas');
 
 const gameLogic = new GameLogic();
+
+const start_button = document.getElementById('start-button');
+start_button.onclick = () => {
+  Tone.start();
+  gameLogic.buttonStarted();
+  start_button.style.display = 'none';
+};
 
 const level = new Level(soundCanvas, gameLogic);
 
