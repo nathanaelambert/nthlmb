@@ -34,6 +34,7 @@ function buildSoundMap(items) {
 
 const REF_DISTANCE = 1;
 const ROLL_OFF = 1.5;
+const MAX_VERTICAL_DISTANCE = 200;
 
 
 export class GUI {
