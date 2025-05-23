@@ -26,6 +26,8 @@ function buildSoundMap(items) {
     map[`instruction:${keyContent}`] = path;
   }
 
+  map['kick'] = './sounds/kick-11.wav';
+
   return map;
 }
 
@@ -62,10 +64,7 @@ export class GUI {
     window.addEventListener('resize', () => this.onCanvasResize());
   }
 
-  reset(){
-    this.panners = {};
-    this.currentRectKey = null;
-  }
+
 
   update({ phase }) {
     if (phase === 'instructions') {
@@ -141,30 +140,34 @@ export class GUI {
   async play_instructions() {
     await Tone.start();
     this.stop_sounds();
-  
+
     const secret = this.gameLogic.getSecretItem();
     const player1 = this.players.player(`instruction:find the ${secret.type}`);
-    const player2 = new Tone.Player( `./sounds/${secret.type}s/${secret.content}.mp3`).toDestination();
-  
+    const player2 = new Tone.Player(`./sounds/${secret.type}s/${secret.content}.mp3`).toDestination();
+
+    await Tone.loaded();
+
+    // Get durations
     const duration1 = player1.buffer.duration;
     const duration2 = player2.buffer.duration;
-  
+
+    // Start player1
     player1.start(0);
-    Tone.loaded().then(() => {
-      player2.start(0);
-    });
-   
-    
-    Tone.Transport.start();
-  
+
+    // Schedule player2 to start after player1 finishes
+    setTimeout(() => {
+        player2.start();
+    }, duration1 * 1000);
+
     // Wait until both sounds have finished playing
     await new Promise(resolve => {
-      setTimeout(() => {
-        Tone.Transport.stop(); // Optional: stop transport after playback
-        resolve();
-      }, (duration1 + duration2) * 1000); // Convert seconds to ms
+        setTimeout(() => {
+            Tone.Transport.stop(); // Optional: stop transport after playback
+            resolve();
+        }, (duration1 + duration2) * 1000); // Convert seconds to ms
     });
-  }
+}
+
   
   
   
@@ -178,11 +181,14 @@ export class GUI {
       const key = `${e.item.type}:${e.item.content}`;
       const panner = this.panners[key];
       const closest = closestPointInRectangle(e.rectangle, finger);
+      const isInside = finger.isInside(e.rectangle);
+
       if (panner) {
         // Use the current rectangle center, mapped to meters
         const x = closest.x * 0.066;
         const y = closest.y * 0.066;
-        const z = 0;
+        const z = isInside ? 2 : -2;
+
         panner.setPosition(x, y, z);
       } else {
         // Optional: log missing panners for debugging
@@ -224,33 +230,38 @@ export class GUI {
   }
 
   // Drag: move listener to follow finger
-  _onTouchDrag(finger_x, finger_y) {
+  async _onTouchDrag(finger_x, finger_y) {
     this._setListenerPosition(finger_x, finger_y, 0);
     this._drawSoundAndListenerMarkers();
   
     // Check if the listener is inside any rectangle
     const elements = this.level.getLevel();
     let insideKey = null;
+    const finger = new Point2D(finger_x, finger_y);
     for (const e of elements) {
-      const { x1, y1, x2, y2 } = e.rectangle;
-      if (
-        finger_x >= x1 && finger_x <= x2 &&
-        finger_y >= y1 && finger_y <= y2
-      ) {
+      if (finger.isInside(e.rectangle)){
         insideKey = `${e.item.type}:${e.item.content}`;
-        console.log(e.item.content);
+        // console.log(e.item.content);
         break;
       }
     }
   
-    // If the rectangle has changed, vibrate!
-    if (insideKey !== this.currentRectKey) {
-      if (this.currentRectKey !== null && insideKey !== null && window.navigator.vibrate) {
-        console.log('switch rectangle')
-        window.navigator.vibrate(50); // Vibrate for 50ms
+    // if key is in the margin
+    if (insideKey === null && this.currentRectKey !== insideKey) {
+      console.log('margin');
+
+      await Tone.start();
+
+      const kick = this.players.player('kick');
+  +
+      await Tone.loaded();
+      // Start player1
+      kick.start(0);
+      if (window.navigator.vibrate) {
+        window.navigator.vibrate(50);
       }
-      this.currentRectKey = insideKey;
     }
+    this.currentRectKey = insideKey;
   }
   
 
@@ -300,7 +311,7 @@ export class GUI {
     
   
     // Touch drag
-    this.canvas.addEventListener('touchmove', (e) => {
+    this.canvas.addEventListener('touchmove', async (e) => {
 
       if (e.touches.length === 1) {
         const touch = e.touches[0];
@@ -319,7 +330,7 @@ export class GUI {
     this.canvas.addEventListener('mouseup', (e) => {
       isMouseDown = false;
     });
-    this.canvas.addEventListener('mousemove', (e) => {
+    this.canvas.addEventListener('mousemove', async (e) => {
       if (isMouseDown) {
         const rect = this.canvas.getBoundingClientRect();
         const x = e.clientX - rect.left;
