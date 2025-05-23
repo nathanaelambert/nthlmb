@@ -13,11 +13,9 @@ export class GameLogic extends Observable {
     this.endedCallback = null;
     this.guessedThisRound = false;
     this.numberOfItems = 15;
-
-
     this.sounds_loaded = false;
+    this.audio_activated = false;
     this.level_readdy = false;
-    this.button_started = false;
   }
 
   _setPhase(newPhase) {
@@ -29,8 +27,6 @@ export class GameLogic extends Observable {
       console.warn(`double call set phase ${newPhase}`);
     }
   }
-
-
 
   start_game(number_of_rounds, end) {
     this.totalRounds = number_of_rounds;
@@ -46,7 +42,7 @@ export class GameLogic extends Observable {
     this.secretItem = this.levelItems[Math.floor(Math.random() * this.levelItems.length)];
     this.guessedThisRound = false;
     if (this.sounds_loaded){
-      this._try_to_level();
+      this._setPhase('level');
     } else {
       this._setPhase('loading');
     }
@@ -57,7 +53,8 @@ export class GameLogic extends Observable {
       console.warn(`assets loaded in state ${this.phase}`);
     }
     this.sounds_loaded = true;
-    this._try_to_level();
+    this._setPhase('level');
+
   }
   
   levelGenerated() {
@@ -65,21 +62,10 @@ export class GameLogic extends Observable {
       console.warn('level generated outside level phase');
     }
     this.level_readdy = true;
-    if (this.sounds_loaded && this.buttonStarted) {
+    if (this.sounds_loaded) {
       this._setPhase('instructions');
     } else {
-      console.warn('level generated with no audio or without user consent');
-    }
-  }
-
-  buttonStarted() {
-    this.button_started = true;
-    this._try_to_level();
-  }
-
-  _try_to_level(){
-    if (this.sounds_loaded && this.button_started){
-      this._setPhase('level');
+      console.warn('level generated with no audio');
     }
   }
 
@@ -101,8 +87,8 @@ export class GameLogic extends Observable {
     if (this.currentRound >= this.totalRounds) {
       this._setPhase('ended');
       if (typeof this.endedCallback === 'function') {
-        this._setPhase('new game');
         this.endedCallback(this.score);
+        this._setPhase('new game');
         this.currentRound = 0;
         this.score = 0;
         this._prepareNextRound();
@@ -140,10 +126,6 @@ export class GameLogic extends Observable {
 
   getSecretItem() {
     return this.secretItem;
-  }
-
-  getButtonStarted(){
-    return this.button_started;
   }
 }
 

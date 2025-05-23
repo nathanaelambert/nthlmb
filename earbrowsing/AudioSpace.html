@@ -39,28 +39,23 @@
       max-width: 90vw;
       word-break: break-word;
     }
-    #start-button {
-      display: block;             /* Ensures it's visible and on its own line */
-      margin: 40px auto;          /* Centers the button horizontally with space above/below */
-      padding: 20px 60px;         /* Makes the button larger */
-      font-size: 2rem;            /* Increases the text size */
-      background-color: #007bff;  /* A vibrant blue background */
-      color: #fff;                /* White text */
-      border: none;               /* Removes default border */
-      border-radius: 10px;        /* Rounded corners */
-      cursor: pointer;            /* Pointer cursor on hover */
-      box-shadow: 0 4px 16px rgba(0,0,0,0.2); /* Subtle shadow */
-      transition: background 0.2s, transform 0.2s;
+
+    button.activate {
+      display: block;
+      font-size: 2vw;        /* Responsive font size */
+      padding: 1vw 2vw;      /* Responsive padding */
+      margin-top: 5vw;
+      border-radius: 0.5em;
+      background: #28a745;
+      color: white;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      transition: background 0.2s;
+      max-width: 90vw;
+      width: auto;
+      white-space: normal;
     }
-
-    #start-button:hover {
-      background-color: #0056b3;  /* Darker blue on hover */
-      transform: scale(1.05);     /* Slightly enlarges on hover */
-    }
-
-
-    
-
   </style>
   
 </head>
@@ -68,13 +63,22 @@
   
   <div id="instructionsOverlay" class="overlay">
     Listen and double tap on the described element.
+    <button id="activateSound" class="activate" onclick="Tone.start(); hideActivateButtons();">activateSound</button>
   </div>
   <div id="loadingOverlay" class="overlay">
     Loading sounds, please wait...
-    <button id="start-button">Start</button>
+    <button id="activateSoundWait" class="activate" onclick="Tone.start(); hideActivateButtons();">activateSound</button>
   </div>
   <canvas id="soundCanvas" style="background-color: black;"></canvas>
 
   <script type="module" src="audio_space/main.js"></script>
+  <script>
+    function hideActivateButtons() {
+      const buttons = document.querySelectorAll('button.activate');
+      buttons.forEach(button => {
+        button.style.display = 'none';
+      });
+    }
+  </script>
 </body>
 </html>

@@ -6,21 +6,10 @@ import { GameLogic } from './GameLogic.js';
 import { items } from './items.js';
 import { GUI } from './GUI.js';
 import { Instructions } from './Instructions.js';
-import { requestFullscreen, isMobileDevice } from './FullScreen.js';
 
 const soundCanvas = document.getElementById('soundCanvas');
 
 const gameLogic = new GameLogic();
-
-const start_button = document.getElementById('start-button');
-start_button.onclick = () => {
-  Tone.start();
-  gameLogic.buttonStarted();
-  start_button.style.display = 'none';
-  if (isMobileDevice()) {
-    requestFullscreen(document.body);
-  }
-};
 
 const level = new Level(soundCanvas, gameLogic);
 
@@ -30,6 +19,6 @@ const instruct = new Instructions(gameLogic, gui);
 
 const rounds = 3;
 gameLogic.start_game(rounds, (score) => {
-  alert(`Game over! Score: ${score} out of ${rounds}`);
+  alert(`Game ended! Score: ${score} out of ${rounds}`);
 });
 
