@@ -27,6 +27,7 @@ function buildSoundMap(items) {
   }
 
   map['kick'] = './sounds/kick-11.wav';
+  map['half-click'] = './sounds/half-click.mp3'
 
   return map;
 }
@@ -248,11 +249,11 @@ export class GUI {
   
     // if key is in the margin
     if (insideKey === null && this.currentRectKey !== insideKey) {
-      console.log('margin');
+      // console.log('margin');
 
       await Tone.start();
 
-      const kick = this.players.player('kick');
+      const kick = this.players.player('half-click');
   +
       await Tone.loaded();
       // Start player1
